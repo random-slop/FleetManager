@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Строительство. Парк техники</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 13px;
+        }
+
+        body {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== MENU BAR ===== */
+        .menubar {
+            background: linear-gradient(to bottom, #3c3c3c, #2d2d2d);
+            border-bottom: 1px solid #1a1a1a;
+            padding: 2px 0;
+            display: flex;
+        }
+
+        .menubar-item {
+            padding: 4px 12px;
+            cursor: pointer;
+            color: #d4d4d4;
+        }
+
+        .menubar-item:hover {
+            background-color: #094771;
+        }
+
+        /* ===== TOOLBAR ===== */
+        .toolbar {
+            background: linear-gradient(to bottom, #383838, #2e2e2e);
+            border-bottom: 1px solid #1a1a1a;
+            padding: 4px 8px;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .toolbar-btn {
+            background: linear-gradient(to bottom, #4a4a4a, #3a3a3a);
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: #d4d4d4;
+            padding: 5px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toolbar-btn:hover {
+            background: linear-gradient(to bottom, #5a5a5a, #4a4a4a);
+            border-color: #666;
+        }
+
+        .toolbar-btn:active {
+            background: linear-gradient(to bottom, #3a3a3a, #4a4a4a);
+        }
+
+        .toolbar-btn.primary {
+            background: linear-gradient(to bottom, #0e639c, #094771);
+            border-color: #0e639c;
+        }
+
+        .toolbar-btn.primary:hover {
+            background: linear-gradient(to bottom, #1177bb, #0e639c);
+        }
+
+        .toolbar-btn.danger {
+            background: linear-gradient(to bottom, #8c2d2d, #6e2424);
+            border-color: #8c2d2d;
+        }
+
+        .toolbar-btn.danger:hover {
+            background: linear-gradient(to bottom, #a33a3a, #8c2d2d);
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 24px;
+            background-color: #555;
+            margin: 0 6px;
+        }
+
+        .toolbar-search {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar-search input {
+            background-color: #3c3c3c;
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: #d4d4d4;
+            padding: 5px 10px;
+            width: 200px;
+        }
+
+        .toolbar-search input:focus {
+            outline: none;
+            border-color: #0e639c;
+        }
+
+        .toolbar-search select {
+            background-color: #3c3c3c;
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: #d4d4d4;
+            padding: 5px 10px;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 200px;
+            background-color: #252526;
+            border-right: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 10px 12px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .sidebar-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background-color: #2a2d2e;
+        }
+
+        .sidebar-item.active {
+            background-color: #37373d;
+            border-left-color: #0e639c;
+        }
+
+        .sidebar-item .icon {
+            width: 18px;
+            text-align: center;
+            color: #888;
+        }
+
+        .sidebar-item.active .icon {
+            color: #0e639c;
+        }
+
+        .sidebar-stats {
+            margin-top: auto;
+            padding: 12px;
+            background-color: #1e1e1e;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            color: #888;
+        }
+
+        .stat-item .value {
+            color: #d4d4d4;
+            font-weight: 600;
+        }
+
+        .stat-item .value.free { color: #4ec9b0; }
+        .stat-item .value.busy { color: #dcdcaa; }
+        .stat-item .value.repair { color: #ce9178; }
+
+        /* ===== CONTENT AREA ===== */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* ===== TABLE ===== */
+        .table-container {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(to bottom, #3c3c3c, #333);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #1a1a1a;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+        }
+
+        th:hover {
+            background: linear-gradient(to bottom, #4a4a4a, #3c3c3c);
+        }
+
+        th::after {
+            content: ' ↕';
+            color: #555;
+            font-size: 10px;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        tr:nth-child(even) {
+            background-color: #252526;
+        }
+
+        tr:hover {
+            background-color: #2a2d2e;
+        }
+
+        tr.selected {
+            background-color: #094771 !important;
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-free {
+            background-color: #1e3a2f;
+            color: #4ec9b0;
+        }
+
+        .status-busy {
+            background-color: #3d3520;
+            color: #dcdcaa;
+        }
+
+        .status-repair {
+            background-color: #3d2a20;
+            color: #ce9178;
+        }
+
+        .status-decommissioned {
+            background-color: #3d2d2d;
+            color: #f48771;
+        }
+
+        /* ===== DETAILS PANEL ===== */
+        .details-panel {
+            width: 320px;
+            background-color: #252526;
+            border-left: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .details-header {
+            padding: 12px;
+            background: linear-gradient(to bottom, #3c3c3c, #333);
+            border-bottom: 1px solid #1a1a1a;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .details-close {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .details-close:hover {
+            color: #d4d4d4;
+        }
+
+        .details-body {
+            padding: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .detail-group {
+            margin-bottom: 16px;
+        }
+
+        .detail-label {
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: #d4d4d4;
+            padding: 6px 0;
+        }
+
+        .details-actions {
+            padding: 12px;
+            border-top: 1px solid #1a1a1a;
+            display: flex;
+            gap: 8px;
+        }
+
+        .details-actions .toolbar-btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* ===== STATUS BAR ===== */
+        .statusbar {
+            background-color: #007acc;
+            padding: 3px 12px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .statusbar-left, .statusbar-right {
+            display: flex;
+            gap: 16px;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 6px;
+            width: 480px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            padding: 12px 16px;
+            background: linear-gradient(to bottom, #3c3c3c, #333);
+            border-bottom: 1px solid #1a1a1a;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #1a1a1a;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #d4d4d4;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background-color: #3c3c3c;
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: #d4d4d4;
+            padding: 8px 10px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0e639c;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* ===== PROJECTS TAB ===== */
+        .project-card {
+            background-color: #2d2d2d;
+            border: 1px solid #3c3c3c;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .project-card:hover {
+            border-color: #555;
+        }
+
+        .project-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .project-name {
+            font-weight: 600;
+            color: #569cd6;
+        }
+
+        .project-dates {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .project-machines {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .machine-chip {
+            background-color: #3c3c3c;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .projects-grid {
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        /* ===== HISTORY TAB ===== */
+        .history-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px 12px;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .history-date {
+            width: 140px;
+            color: #888;
+            flex-shrink: 0;
+        }
+
+        .history-icon {
+            width: 30px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .history-icon.assign { color: #4ec9b0; }
+        .history-icon.return { color: #569cd6; }
+        .history-icon.repair { color: #ce9178; }
+        .history-icon.add { color: #b5cea8; }
+
+        .history-details {
+            flex: 1;
+        }
+
+        .history-title {
+            margin-bottom: 2px;
+        }
+
+        .history-subtitle {
+            color: #888;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+<!-- MENU BAR -->
+<div class="menubar">
+    <div class="menubar-item">Файл</div>
+    <div class="menubar-item">Редактировать</div>
+    <div class="menubar-item">Вид</div>
+    <div class="menubar-item">Техника</div>
+    <div class="menubar-item">Проекты</div>
+    <div class="menubar-item">Отчёты</div>
+    <div class="menubar-item">Справка</div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+    <button class="toolbar-btn primary" onclick="openModal('add-modal')">
+        <span>＋</span> Добавить
+    </button>
+    <button class="toolbar-btn">
+        <span>✎</span> Редактировать
+    </button>
+    <button class="toolbar-btn danger">
+        <span>✕</span> Удалить
+    </button>
+    <div class="toolbar-separator"></div>
+    <button class="toolbar-btn" onclick="openModal('assign-modal')">
+        <span>→</span> Назначить на проект
+    </button>
+    <button class="toolbar-btn">
+        <span>←</span> Вернуть с проекта
+    </button>
+    <div class="toolbar-separator"></div>
+    <button class="toolbar-btn">
+        <span>🔧</span> В ремонт
+    </button>
+    <div class="toolbar-search">
+        <select>
+            <option value="">Все статусы</option>
+            <option value="free">Свободна</option>
+            <option value="busy">На объекте</option>
+            <option value="repair">В ремонте</option>
+            <option value="decommissioned">Списана</option>
+        </select>
+        <input type="text" placeholder="Поиск по названию...">
+    </div>
+</div>
+
+<!-- MAIN CONTAINER -->
+<div class="main-container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">Навигация</div>
+        <div class="sidebar-item active" onclick="switchTab('machines')">
+            <span class="icon">🚜</span>
+            <span>Парк техники</span>
+        </div>
+        <div class="sidebar-item" onclick="switchTab('projects')">
+            <span class="icon">🏗</span>
+            <span>Проекты</span>
+        </div>
+        <div class="sidebar-item" onclick="switchTab('history')">
+            <span class="icon">📋</span>
+            <span>История</span>
+        </div>
+        <div class="sidebar-item">
+            <span class="icon">📊</span>
+            <span>Отчёты</span>
+        </div>
+        <div class="sidebar-item">
+            <span class="icon">⚙</span>
+            <span>Настройки</span>
+        </div>
+
+        <div class="sidebar-stats">
+            <div class="stat-item">
+                <span>Всего техники:</span>
+                <span class="value">24</span>
+            </div>
+            <div class="stat-item">
+                <span>Свободна:</span>
+                <span class="value free">12</span>
+            </div>
+            <div class="stat-item">
+                <span>На объектах:</span>
+                <span class="value busy">9</span>
+            </div>
+            <div class="stat-item">
+                <span>В ремонте:</span>
+                <span class="value repair">3</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+        <!-- MACHINES TAB -->
+        <div class="tab-content active" id="tab-machines">
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Тип</th>
+                        <th>Серийный номер</th>
+                        <th>Год выпуска</th>
+                        <th>Статус</th>
+                        <th>Стоимость</th>
+                        <th>Текущий проект</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="selected">
+                        <td>Экскаватор CAT 320D</td>
+                        <td>Экскаватор</td>
+                        <td>CAT320D-2019-0847</td>
+                        <td>2019</td>
+                        <td><span class="status-badge status-busy">На объекте</span></td>
+                        <td>8 500 000 ₽</td>
+                        <td>ЖК «Солнечный»</td>
+                    </tr>
+                    <tr>
+                        <td>Бульдозер Komatsu D65</td>
+                        <td>Бульдозер</td>
+                        <td>KOM-D65-2020-1123</td>
+                        <td>2020</td>
+                        <td><span class="status-badge status-free">Свободна</span></td>
+                        <td>12 300 000 ₽</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>Кран башенный КБ-403</td>
+                        <td>Кран</td>
+                        <td>KB403-2018-0291</td>
+                        <td>2018</td>
+                        <td><span class="status-badge status-busy">На объекте</span></td>
+                        <td>15 700 000 ₽</td>
+                        <td>БЦ «Меридиан»</td>
+                    </tr>
+                    <tr>
+                        <td>Автокран Liebherr LTM 1050</td>
+                        <td>Автокран</td>
+                        <td>LTM1050-2021-0055</td>
+                        <td>2021</td>
+                        <td><span class="status-badge status-repair">В ремонте</span></td>
+                        <td>22 100 000 ₽</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>Погрузчик JCB 531-70</td>
+                        <td>Погрузчик</td>
+                        <td>JCB531-2019-0782</td>
+                        <td>2019</td>
+                        <td><span class="status-badge status-free">Свободна</span></td>
+                        <td>4 200 000 ₽</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>Экскаватор-погрузчик JCB 3CX</td>
+                        <td>Экскаватор-погрузчик</td>
+                        <td>JCB3CX-2020-0394</td>
+                        <td>2020</td>
+                        <td><span class="status-badge status-busy">На объекте</span></td>
+                        <td>5 800 000 ₽</td>
+                        <td>ЖК «Солнечный»</td>
+                    </tr>
+                    <tr>
+                        <td>Самосвал КАМАЗ-6520</td>
+                        <td>Самосвал</td>
+                        <td>KMZ6520-2017-1847</td>
+                        <td>2017</td>
+                        <td><span class="status-badge status-free">Свободна</span></td>
+                        <td>3 900 000 ₽</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>Бетономешалка MAN TGS</td>
+                        <td>Бетономешалка</td>
+                        <td>MAN-TGS-2019-0621</td>
+                        <td>2019</td>
+                        <td><span class="status-badge status-busy">На объекте</span></td>
+                        <td>7 200 000 ₽</td>
+                        <td>Школа №15</td>
+                    </tr>
+                    <tr>
+                        <td>Каток BOMAG BW 213</td>
+                        <td>Каток</td>
+                        <td>BOMAG213-2018-0183</td>
+                        <td>2018</td>
+                        <td><span class="status-badge status-repair">В ремонте</span></td>
+                        <td>6 100 000 ₽</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>Грейдер ДЗ-98</td>
+                        <td>Грейдер</td>
+                        <td>DZ98-2016-0095</td>
+                        <td>2016</td>
+                        <td><span class="status-badge status-decommissioned">Списана</span></td>
+                        <td>2 800 000 ₽</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>Виброплита Wacker Neuson</td>
+                        <td>Виброплита</td>
+                        <td>WN-VP-2022-0012</td>
+                        <td>2022</td>
+                        <td><span class="status-badge status-free">Свободна</span></td>
+                        <td>320 000 ₽</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>Компрессор Atlas Copco</td>
+                        <td>Компрессор</td>
+                        <td>AC-XAS-2021-0487</td>
+                        <td>2021</td>
+                        <td><span class="status-badge status-busy">На объекте</span></td>
+                        <td>890 000 ₽</td>
+                        <td>БЦ «Меридиан»</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PROJECTS TAB -->
+        <div class="tab-content" id="tab-projects">
+            <div class="toolbar" style="background: #252526; border: none;">
+                <button class="toolbar-btn primary" onclick="openModal('project-modal')">
+                    <span>＋</span> Новый проект
+                </button>
+                <button class="toolbar-btn">
+                    <span>✎</span> Редактировать
+                </button>
+                <button class="toolbar-btn danger">
+                    <span>✕</span> Удалить
+                </button>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-card-header">
+                        <span class="project-name">ЖК «Солнечный»</span>
+                        <span class="status-badge status-busy">Активный</span>
+                    </div>
+                    <div class="project-dates">📅 15.03.2025 — 30.11.2026</div>
+                    <div class="project-machines">
+                        <span class="machine-chip">Экскаватор CAT 320D</span>
+                        <span class="machine-chip">Экскаватор-погрузчик JCB 3CX</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-card-header">
+                        <span class="project-name">БЦ «Меридиан»</span>
+                        <span class="status-badge status-busy">Активный</span>
+                    </div>
+                    <div class="project-dates">📅 01.06.2025 — 15.08.2027</div>
+                    <div class="project-machines">
+                        <span class="machine-chip">Кран башенный КБ-403</span>
+                        <span class="machine-chip">Компрессор Atlas Copco</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-card-header">
+                        <span class="project-name">Школа №15</span>
+                        <span class="status-badge status-busy">Активный</span>
+                    </div>
+                    <div class="project-dates">📅 10.09.2025 — 01.09.2026</div>
+                    <div class="project-machines">
+                        <span class="machine-chip">Бетономешалка MAN TGS</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-card-header">
+                        <span class="project-name">Дорога на ул. Ленина</span>
+                        <span class="status-badge status-free">Запланирован</span>
+                    </div>
+                    <div class="project-dates">📅 01.04.2026 — 30.09.2026</div>
+                    <div class="project-machines">
+                        <span style="color: #888; font-size: 12px;">Техника не назначена</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-card-header">
+                        <span class="project-name">Реконструкция моста</span>
+                        <span class="status-badge status-decommissioned">Завершён</span>
+                    </div>
+                    <div class="project-dates">📅 01.02.2024 — 15.12.2025</div>
+                    <div class="project-machines">
+                        <span style="color: #888; font-size: 12px;">Завершён</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY TAB -->
+        <div class="tab-content" id="tab-history">
+            <div class="table-container">
+                <div class="history-item">
+                    <span class="history-date">20.01.2026 14:32</span>
+                    <span class="history-icon assign">→</span>
+                    <div class="history-details">
+                        <div class="history-title"><b>Экскаватор CAT 320D</b> назначен на проект</div>
+                        <div class="history-subtitle">Проект: ЖК «Солнечный»</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <span class="history-date">19.01.2026 09:15</span>
+                    <span class="history-icon repair">🔧</span>
+                    <div class="history-details">
+                        <div class="history-title"><b>Автокран Liebherr LTM 1050</b> отправлен в ремонт</div>
+                        <div class="history-subtitle">Причина: Замена гидравлического насоса</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <span class="history-date">18.01.2026 16:45</span>
+                    <span class="history-icon return">←</span>
+                    <div class="history-details">
+                        <div class="history-title"><b>Бульдозер Komatsu D65</b> возвращён с проекта</div>
+                        <div class="history-subtitle">Проект: Реконструкция моста</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <span class="history-date">17.01.2026 11:20</span>
+                    <span class="history-icon add">＋</span>
+                    <div class="history-details">
+                        <div class="history-title"><b>Виброплита Wacker Neuson</b> добавлена в парк</div>
+                        <div class="history-subtitle">Стоимость: 320 000 ₽</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <span class="history-date">15.01.2026 10:00</span>
+                    <span class="history-icon assign">→</span>
+                    <div class="history-details">
+                        <div class="history-title"><b>Бетономешалка MAN TGS</b> назначена на проект</div>
+                        <div class="history-subtitle">Проект: Школа №15</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <span class="history-date">12.01.2026 08:30</span>
+                    <span class="history-icon repair">🔧</span>
+                    <div class="history-details">
+                        <div class="history-title"><b>Каток BOMAG BW 213</b> отправлен в ремонт</div>
+                        <div class="history-subtitle">Причина: Плановое ТО</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETAILS PANEL -->
+    <div class="details-panel">
+        <div class="details-header">
+            <span>Детали техники</span>
+            <button class="details-close">×</button>
+        </div>
+        <div class="details-body">
+            <div class="detail-group">
+                <div class="detail-label">Название</div>
+                <div class="detail-value">Экскаватор CAT 320D</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Тип техники</div>
+                <div class="detail-value">Экскаватор</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Серийный номер</div>
+                <div class="detail-value">CAT320D-2019-0847</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Год выпуска</div>
+                <div class="detail-value">2019</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Статус</div>
+                <div class="detail-value">
+                    <span class="status-badge status-busy">На объекте</span>
+                </div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Стоимость</div>
+                <div class="detail-value">8 500 000 ₽</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Текущий проект</div>
+                <div class="detail-value" style="color: #569cd6;">ЖК «Солнечный»</div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-label">Назначен с</div>
+                <div class="detail-value">20.01.2026</div>
+            </div>
+        </div>
+        <div class="details-actions">
+            <button class="toolbar-btn">✎ Редактировать</button>
+            <button class="toolbar-btn danger">✕ Удалить</button>
+        </div>
+    </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+    <div class="statusbar-left">
+        <span>Выбрано: 1 из 24</span>
+        <span>|</span>
+        <span>База данных: fleet.db</span>
+    </div>
+    <div class="statusbar-right">
+        <span>Последнее сохранение: 19:45</span>
+        <span>|</span>
+        <span>v1.0.0</span>
+    </div>
+</div>
+
+<!-- MODAL: ADD MACHINE -->
+<div class="modal-overlay" id="add-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <span>Добавить технику</span>
+            <button class="details-close" onclick="closeModal('add-modal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Название *</label>
+                <input type="text" placeholder="Например: Экскаватор CAT 320D">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Тип техники *</label>
+                    <select>
+                        <option value="">Выберите тип...</option>
+                        <option>Экскаватор</option>
+                        <option>Бульдозер</option>
+                        <option>Кран</option>
+                        <option>Автокран</option>
+                        <option>Погрузчик</option>
+                        <option>Самосвал</option>
+                        <option>Бетономешалка</option>
+                        <option>Каток</option>
+                        <option>Грейдер</option>
+                        <option>Компрессор</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Год выпуска *</label>
+                    <input type="number" placeholder="2020" min="1990" max="2026">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Серийный номер *</label>
+                <input type="text" placeholder="CAT320D-2019-0847">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Стоимость (₽) *</label>
+                    <input type="number" placeholder="5000000">
+                </div>
+                <div class="form-group">
+                    <label>Статус</label>
+                    <select>
+                        <option>Свободна</option>
+                        <option>На объекте</option>
+                        <option>В ремонте</option>
+                        <option>Списана</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Примечание</label>
+                <textarea rows="3" placeholder="Дополнительная информация..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="toolbar-btn" onclick="closeModal('add-modal')">Отмена</button>
+            <button class="toolbar-btn primary">Добавить</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: ASSIGN TO PROJECT -->
+<div class="modal-overlay" id="assign-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <span>Назначить на проект</span>
+            <button class="details-close" onclick="closeModal('assign-modal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Техника</label>
+                <input type="text" value="Экскаватор CAT 320D" disabled>
+            </div>
+            <div class="form-group">
+                <label>Проект *</label>
+                <select>
+                    <option value="">Выберите проект...</option>
+                    <option>ЖК «Солнечный»</option>
+                    <option>БЦ «Меридиан»</option>
+                    <option>Школа №15</option>
+                    <option>Дорога на ул. Ленина</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Дата начала *</label>
+                    <input type="date" value="2026-01-20">
+                </div>
+                <div class="form-group">
+                    <label>Дата окончания</label>
+                    <input type="date">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Комментарий</label>
+                <textarea rows="2" placeholder="Причина назначения..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="toolbar-btn" onclick="closeModal('assign-modal')">Отмена</button>
+            <button class="toolbar-btn primary">Назначить</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: NEW PROJECT -->
+<div class="modal-overlay" id="project-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <span>Новый проект</span>
+            <button class="details-close" onclick="closeModal('project-modal')">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Название проекта *</label>
+                <input type="text" placeholder="Например: ЖК «Новый»">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Дата начала *</label>
+                    <input type="date">
+                </div>
+                <div class="form-group">
+                    <label>Дата окончания *</label>
+                    <input type="date">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Адрес</label>
+                <input type="text" placeholder="г. Москва, ул. Примерная, д. 1">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea rows="3" placeholder="Описание проекта..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="toolbar-btn" onclick="closeModal('project-modal')">Отмена</button>
+            <button class="toolbar-btn primary">Создать</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabName) {
+        // Remove active class from all sidebar items and tabs
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Add active class to clicked item and corresponding tab
+        event.currentTarget.classList.add('active');
+        document.getElementById('tab-' + tabName).classList.add('active');
+    }
+
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    });
+
+    // Row selection
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', function() {
+            document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+</script>
+</body>
+</html>
