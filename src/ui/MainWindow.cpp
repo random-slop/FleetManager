@@ -272,6 +272,7 @@ void MainWindow::showFleetView()
     ui->btnFleet->setStyleSheet(activeStyle);
     ui->btnProjects->setStyleSheet(inactiveStyle);
     ui->statusFilter->setEnabled(true);
+    updateStatusBar();
     updateToolbarButtonsState();
 }
 
@@ -308,6 +309,7 @@ void MainWindow::showProjectsView()
     ui->btnProjects->setStyleSheet(activeStyle);
     ui->btnFleet->setStyleSheet(inactiveStyle);
     ui->statusFilter->setEnabled(false);
+    updateStatusBar();
     updateToolbarButtonsState();
 }
 
@@ -721,12 +723,32 @@ void MainWindow::showColumnHeaderMenu(const QPoint& pos)
 
 void MainWindow::updateStatusBar() const
 {
-    const auto stats = FleetDatabase::instance().getStatistics();
-    ui->statusbar->showMessage(QString("Всего: %1 | Свободно: %2 | На объектах: %3 | В ремонте: %4")
-                               .arg(stats.total)
-                               .arg(stats.available)
-                               .arg(stats.onSite)
-                               .arg(stats.inRepair));
+    if (m_stackedWidget->currentIndex() == 0) {
+        // Fleet view - show machine statistics
+        const auto stats = FleetDatabase::instance().getStatistics();
+        ui->statusbar->showMessage(QString("Всего: %1 | Свободно: %2 | На объектах: %3 | В ремонте: %4 | Списано: %5")
+                                   .arg(stats.total)
+                                   .arg(stats.available)
+                                   .arg(stats.onSite)
+                                   .arg(stats.inRepair)
+                                   .arg(stats.decommissioned));
+    } else if (m_stackedWidget->currentIndex() == 1) {
+        // Projects view - show project statistics
+        const auto allProjects = FleetDatabase::instance().getAllProjects();
+        int totalProjects = allProjects.size();
+        int activeProjects = 0;
+        
+        for (const auto& project : allProjects) {
+            auto machines = FleetDatabase::instance().getMachinesByProject(project->getName());
+            if (!machines.isEmpty()) {
+                activeProjects++;
+            }
+        }
+        
+        ui->statusbar->showMessage(QString("Всего проектов: %1 | С техникой: %2")
+                                   .arg(totalProjects)
+                                   .arg(activeProjects));
+    }
 }
 
 void MainWindow::updateToolbarButtonsState()
