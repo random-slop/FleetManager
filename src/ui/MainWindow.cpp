@@ -34,6 +34,10 @@ MainWindow::MainWindow(QWidget *parent)
     , m_btnProjects(nullptr)
 {
     ui->setupUi(this);
+    
+    // Disable right-click context menu on toolbar
+    ui->toolBar->setContextMenuPolicy(Qt::NoContextMenu);
+    
     setupUI();
     connectSignals();
     
@@ -50,6 +54,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupUI()
 {
+    // Disable context menu on all toolbar buttons
+    for (QObject *obj : ui->toolBar->children()) {
+        if (QWidget *widget = qobject_cast<QWidget*>(obj)) {
+            widget->setContextMenuPolicy(Qt::NoContextMenu);
+        }
+    }
+    
     setupSidebar();
     
     // Создаем StackedWidget для переключения между таблицами
@@ -255,6 +266,8 @@ void MainWindow::setupTable()
     m_tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested,
             this, &MainWindow::showColumnHeaderMenu);
+
+
 }
 
 void MainWindow::setupProjectsTable()
@@ -364,8 +377,6 @@ void MainWindow::connectSignals()
     connect(ui->actionAssignToProject, &QAction::triggered, this, &MainWindow::onAssignToProject);
     connect(ui->actionReturnFromProject, &QAction::triggered, this, &MainWindow::onReturnFromProject);
     connect(ui->actionSendToRepair, &QAction::triggered, this, &MainWindow::onSendToRepair);
-    connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onAbout);
-    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onExit);
     
     // Подключаем выбор строки в таблице
     connect(m_tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableSelectionChanged);
@@ -634,22 +645,6 @@ void MainWindow::onSendToRepair()
     } else {
         QMessageBox::critical(this, "Ошибка", "Не удалось обновить статус техники");
     }
-}
-
-void MainWindow::onAbout()
-{
-    QMessageBox::about(this, "О программе",
-                      "<h3>Парк техники</h3>"
-                      "<p>Версия 1.0</p>"
-                      "<p>Программа для управления парком строительной техники</p>"
-                      "<p><b>Разработчик:</b> Вячеслав</p>"
-                      "<p><b>Технологии:</b> Qt6, C++20, SQLite</p>"
-                      "<p>Курсовая работа по дисциплине \"Программирование\"</p>");
-}
-
-void MainWindow::onExit()
-{
-    close();
 }
 
 void MainWindow::onTableSelectionChanged() const

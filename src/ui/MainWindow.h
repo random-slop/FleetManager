@@ -55,8 +55,6 @@ private slots:
     void onAssignToProject();
     void onReturnFromProject();
     void onSendToRepair();
-    void onAbout();
-    void onExit();
     
     // Слот для обработки выбора строки в таблице
     void onTableSelectionChanged() const;
