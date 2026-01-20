@@ -128,9 +128,9 @@ bool MachineDialog::validate()
     
     // Проверка года выпуска
     const int currentYear = QDate::currentDate().year();
-    if (ui->spinYear->value() > currentYear + 1) {
+    if (ui->spinYear->value() < 1900 || ui->spinYear->value() > currentYear + 1) {
         QMessageBox::warning(this, "Ошибка валидации",
-                           QString("Год выпуска не может быть больше %1").arg(currentYear + 1));
+                           QString("Год выпуска должен быть в диапазоне от 1900 до %1").arg(currentYear + 1));
         ui->spinYear->setFocus();
         return false;
     }
