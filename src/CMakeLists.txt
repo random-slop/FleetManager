@@ -14,7 +14,20 @@ find_package(Qt6 COMPONENTS
 	Sql
 	REQUIRED)
 
-add_executable(FleetManager main.cpp)
+add_executable(FleetManager 
+	main.cpp
+	models/Machine.h
+	models/Machine.cpp
+	models/Project.h
+	models/Project.cpp
+	database/FleetDatabase.h
+	database/FleetDatabase.cpp
+	ui/MainWindow.h
+	ui/MainWindow.cpp
+	ui/MainWindow.ui
+	ui/MachineTableModel.h
+	ui/MachineTableModel.cpp
+)
 
 target_link_libraries(FleetManager
 	Qt::Core
