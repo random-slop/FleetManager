@@ -178,7 +178,12 @@ void MainWindow::setupTable()
     // Устанавливаем ширину колонок
     m_tableView->setColumnWidth(0, 250); // Название
     m_tableView->setColumnWidth(1, 120); // Статус
-    m_tableView->setColumnWidth(3, 200); // Текущий проект
+    m_tableView->setColumnWidth(2, 200); // Текущий проект
+    m_tableView->setColumnWidth(3, 150); // Тип техники
+    m_tableView->setColumnWidth(4, 150); // Серийный номер
+    m_tableView->setColumnWidth(5, 120); // Год выпуска
+    m_tableView->setColumnWidth(6, 150); // Стоимость
+    m_tableView->setColumnWidth(7, 120); // Назначен с
     
     // Включаем сортировку по колонкам
     m_tableView->setSortingEnabled(true);
