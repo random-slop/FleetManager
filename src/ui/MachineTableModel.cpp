@@ -15,7 +15,7 @@ MachineTableModel::MachineTableModel(QObject *parent)
     m_columnVisibility[0] = true;  // Название
     m_columnVisibility[1] = true;  // Статус
     m_columnVisibility[2] = true;  // Текущий проект
-    m_columnVisibility[3] = false; // Тип техники
+    m_columnVisibility[3] = false;  // Тип техники
     m_columnVisibility[4] = false; // Серийный номер
     m_columnVisibility[5] = false; // Год выпуска
     m_columnVisibility[6] = false; // Стоимость

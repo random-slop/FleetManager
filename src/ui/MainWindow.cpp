@@ -765,18 +765,34 @@ void MainWindow::showProjectContextMenu(const QPoint& pos)
 
 void MainWindow::showColumnHeaderMenu(const QPoint& pos)
 {
-    QMenu menu(this);
-    for (int i = 0; i < m_tableModel->columnCount(); ++i) {
-        QString title = m_tableModel->headerData(i, Qt::Horizontal).toString();
-        QAction *action = menu.addAction(title);
-        action->setCheckable(true);
-        action->setChecked(!m_tableView->isColumnHidden(i));
+    QMenu menu;
+    
+    // Получить информацию о всех колонках
+    auto columnsInfo = m_tableModel->getColumnsInfo();
+    
+    // Создать чекбокс-действия для каждого столбца
+    QVector<QAction*> columnActions;
+    for (const auto& info : columnsInfo) {
+        int columnIndex = std::get<0>(info);
+        QString columnName = std::get<1>(info);
+        bool isVisible = std::get<2>(info);
         
-        connect(action, &QAction::triggered, this, [this, i](bool checked){
-            m_tableView->setColumnHidden(i, !checked);
-        });
+        QAction *action = menu.addAction(columnName);
+        action->setCheckable(true);
+        action->setChecked(isVisible);
+        action->setData(columnIndex);
+        columnActions.append(action);
     }
-    menu.exec(m_tableView->horizontalHeader()->mapToGlobal(pos));
+    
+    // Показать меню
+    QAction *selectedAction = menu.exec(m_tableView->horizontalHeader()->mapToGlobal(pos));
+    
+    // Обработать выбранное действие
+    if (selectedAction) {
+        int columnIndex = selectedAction->data().toInt();
+        bool newVisibility = selectedAction->isChecked();
+        m_tableModel->setColumnVisible(columnIndex, newVisibility);
+    }
 }
 
 void MainWindow::updateStatusBar() const
