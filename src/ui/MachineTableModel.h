@@ -51,6 +51,26 @@ public:
      * @return Индекс строки или -1 если не найдено
      */
     int getRowById(int machineId) const;
+    
+    /**
+     * @brief Установить видимость колонки
+     * @param column Номер колонки
+     * @param visible true - показать, false - скрыть
+     */
+    void setColumnVisible(int column, bool visible);
+    
+    /**
+     * @brief Проверить видимость колонки
+     * @param column Номер колонки
+     * @return true если колонка видима
+     */
+    bool isColumnVisible(int column) const;
+    
+    /**
+     * @brief Получить список всех колонок
+     * @return QList с парами {index, name, isVisible}
+     */
+    QList<std::tuple<int, QString, bool>> getColumnsInfo() const;
 
 private:
     /**
@@ -68,4 +88,14 @@ private:
     // Параметры сортировки
     int m_sortColumn = -1;
     Qt::SortOrder m_sortOrder = Qt::AscendingOrder;
+    
+    // Видимость столбцов (индекс -> видимость)
+    QVector<bool> m_columnVisibility;
+    
+    /**
+     * @brief Получить реальный индекс колонки с учётом скрытых колонок
+     * @param displayColumn Видимый индекс колонки
+     * @return Реальный индекс колонки (-1 если не найдено)
+     */
+    int getActualColumnIndex(int displayColumn) const;
 };

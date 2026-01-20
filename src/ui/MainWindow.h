@@ -52,6 +52,9 @@ private slots:
     
     // Слот для контекстного меню
     void showContextMenu(const QPoint& pos);
+    
+    // Слот для контекстного меню на заголовке таблицы
+    void showColumnHeaderMenu(const QPoint& pos);
 
 private:
     /**

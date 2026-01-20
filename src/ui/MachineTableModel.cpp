@@ -9,6 +9,13 @@ MachineTableModel::MachineTableModel(QObject *parent)
     , m_currentStatusFilter(-1) // -1 означает показать все
 {
     m_headers << "Название" << "Статус" << "Текущий проект";
+    
+    // Инициализируем расширенный список заголовков с полной информацией
+    // Все столбцы видимы по умолчанию
+    m_columnVisibility.resize(m_headers.size());
+    for (int i = 0; i < m_headers.size(); ++i) {
+        m_columnVisibility[i] = true;
+    }
 }
 
 int MachineTableModel::rowCount(const QModelIndex &parent) const
@@ -20,7 +27,26 @@ int MachineTableModel::rowCount(const QModelIndex &parent) const
 int MachineTableModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid()) return 0;
-    return m_headers.size();
+    
+    int visibleCount = 0;
+    for (bool visible : m_columnVisibility) {
+        if (visible) visibleCount++;
+    }
+    return visibleCount;
+}
+
+int MachineTableModel::getActualColumnIndex(int displayColumn) const
+{
+    int visibleCount = 0;
+    for (int i = 0; i < m_columnVisibility.size(); ++i) {
+        if (m_columnVisibility[i]) {
+            if (visibleCount == displayColumn) {
+                return i;
+            }
+            visibleCount++;
+        }
+    }
+    return -1;
 }
 
 QVariant MachineTableModel::data(const QModelIndex &index, int role) const
@@ -29,11 +55,17 @@ QVariant MachineTableModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
     
+    // Получить реальный индекс столбца
+    int actualColumn = getActualColumnIndex(index.column());
+    if (actualColumn == -1) {
+        return QVariant();
+    }
+    
     auto machine = m_machines[index.row()];
     
     // Отображение данных
     if (role == Qt::DisplayRole) {
-        switch (index.column()) {
+        switch (actualColumn) {
             case 0: return machine->getName();
             case 1: return Machine::statusToString(machine->getStatus());
             case 2: return machine->getCurrentProject().isEmpty() ? "—" : machine->getCurrentProject();
@@ -42,7 +74,7 @@ QVariant MachineTableModel::data(const QModelIndex &index, int role) const
     }
     
     // Цветовое кодирование статуса
-    if (role == Qt::BackgroundRole && index.column() == 1) {
+    if (role == Qt::BackgroundRole && actualColumn == 1) {
         switch (machine->getStatus()) {
             case MachineStatus::Available:
                 return QBrush(QColor(76, 175, 80, 50)); // Зелёный (свободна)
@@ -58,7 +90,7 @@ QVariant MachineTableModel::data(const QModelIndex &index, int role) const
     }
     
     // Цвет текста для статуса
-    if (role == Qt::ForegroundRole && index.column() == 1) {
+    if (role == Qt::ForegroundRole && actualColumn == 1) {
         switch (machine->getStatus()) {
             case MachineStatus::Available:
                 return QBrush(QColor(76, 175, 80)); // Зелёный
@@ -79,8 +111,9 @@ QVariant MachineTableModel::data(const QModelIndex &index, int role) const
 QVariant MachineTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-        if (section >= 0 && section < m_headers.size()) {
-            return m_headers[section];
+        int actualColumn = getActualColumnIndex(section);
+        if (actualColumn >= 0 && actualColumn < m_headers.size()) {
+            return m_headers[actualColumn];
         }
     }
     return QVariant();
@@ -145,12 +178,14 @@ void MachineTableModel::applyFilter()
 
 void MachineTableModel::sort(int column, Qt::SortOrder order)
 {
-    if (column < 0 || column >= m_headers.size()) {
+    // Получить реальный индекс столбца
+    int actualColumn = getActualColumnIndex(column);
+    if (actualColumn < 0 || actualColumn >= m_headers.size()) {
         return;
     }
     
     // Сохранить параметры сортировки
-    m_sortColumn = column;
+    m_sortColumn = actualColumn;
     m_sortOrder = order;
     
     // Выполнить сортировку
@@ -186,4 +221,36 @@ int MachineTableModel::getRowById(int machineId) const
         }
     }
     return -1;
+}
+
+void MachineTableModel::setColumnVisible(int column, bool visible)
+{
+    if (column < 0 || column >= m_columnVisibility.size()) {
+        return;
+    }
+    
+    if (m_columnVisibility[column] == visible) {
+        return; // Нет изменений
+    }
+    
+    beginResetModel();
+    m_columnVisibility[column] = visible;
+    endResetModel();
+}
+
+bool MachineTableModel::isColumnVisible(int column) const
+{
+    if (column < 0 || column >= m_columnVisibility.size()) {
+        return false;
+    }
+    return m_columnVisibility[column];
+}
+
+QList<std::tuple<int, QString, bool>> MachineTableModel::getColumnsInfo() const
+{
+    QList<std::tuple<int, QString, bool>> result;
+    for (int i = 0; i < m_headers.size(); ++i) {
+        result.append(std::make_tuple(i, m_headers[i], m_columnVisibility[i]));
+    }
+    return result;
 }

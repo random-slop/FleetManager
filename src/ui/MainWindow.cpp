@@ -14,6 +14,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QDebug>
+#include <tuple>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -185,10 +186,15 @@ void MainWindow::setupTable()
     // Двойной клик для редактирования
     connect(m_tableView, &QTableView::doubleClicked, this, &MainWindow::onEditMachine);
     
-    // Контекстное меню (ПКМ)
+    // Контекстное меню (ПКМ) на строках таблицы
     m_tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_tableView, &QTableView::customContextMenuRequested,
             this, &MainWindow::showContextMenu);
+    
+    // Контекстное меню (ПКМ) на заголовке таблицы
+    m_tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested,
+            this, &MainWindow::showColumnHeaderMenu);
     
     // Добавляем таблицу в контейнер
     QVBoxLayout *tableLayout = new QVBoxLayout(ui->tableContainer);
@@ -541,4 +547,36 @@ void MainWindow::showContextMenu(const QPoint& pos)
     
     // Показываем меню в глобальных координатах
     menu.exec(m_tableView->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::showColumnHeaderMenu(const QPoint& pos)
+{
+    QMenu menu;
+    
+    // Получить информацию о всех колонках
+    auto columnsInfo = m_tableModel->getColumnsInfo();
+    
+    // Создать чекбокс-действия для каждого столбца
+    QVector<QAction*> columnActions;
+    for (const auto& info : columnsInfo) {
+        int columnIndex = std::get<0>(info);
+        QString columnName = std::get<1>(info);
+        bool isVisible = std::get<2>(info);
+        
+        QAction *action = menu.addAction(columnName);
+        action->setCheckable(true);
+        action->setChecked(isVisible);
+        action->setData(columnIndex);
+        columnActions.append(action);
+    }
+    
+    // Показать меню
+    QAction *selectedAction = menu.exec(m_tableView->horizontalHeader()->mapToGlobal(pos));
+    
+    // Обработать выбранное действие
+    if (selectedAction) {
+        int columnIndex = selectedAction->data().toInt();
+        bool newVisibility = selectedAction->isChecked();
+        m_tableModel->setColumnVisible(columnIndex, newVisibility);
+    }
 }
