@@ -85,6 +85,182 @@ QStatusBar {
     border-right: 1px solid #1a1a1a;
 }</string>
       </property>
+      <layout class="QVBoxLayout" name="sidebarLayout">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <property name="leftMargin">
+        <number>8</number>
+       </property>
+       <property name="topMargin">
+        <number>8</number>
+       </property>
+       <property name="rightMargin">
+        <number>8</number>
+       </property>
+       <property name="bottomMargin">
+        <number>8</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="navTitle">
+         <property name="styleSheet">
+          <string notr="true">color: #858585; font-weight: bold; font-size: 11px; padding-bottom: 4px;</string>
+         </property>
+         <property name="text">
+          <string>НАВИГАЦИЯ</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnFleet">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    text-align: left;
+    padding: 8px 12px;
+    background-color: #094771;
+    color: white;
+    border: none;
+    border-radius: 2px;
+}
+QPushButton:hover {
+    background-color: #0e639c;
+}</string>
+         </property>
+         <property name="text">
+          <string>Парк техники</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnProjects">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    text-align: left;
+    padding: 8px 12px;
+    background-color: transparent;
+    color: #cccccc;
+    border: none;
+}
+QPushButton:hover {
+    background-color: #2a2d2e;
+}</string>
+         </property>
+         <property name="text">
+          <string>Проекты</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnSettings">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    text-align: left;
+    padding: 8px 12px;
+    background-color: transparent;
+    color: #cccccc;
+    border: none;
+}
+QPushButton:hover {
+    background-color: #2a2d2e;
+}</string>
+         </property>
+         <property name="text">
+          <string>Настройки</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer1">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="filterTitle">
+         <property name="styleSheet">
+          <string notr="true">color: #858585; font-weight: bold; font-size: 11px; padding-bottom: 4px;</string>
+         </property>
+         <property name="text">
+          <string>ФИЛЬТР</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="statusFilter">
+         <property name="styleSheet">
+          <string notr="true">QComboBox {
+    padding: 6px;
+    background-color: #3c3c3c;
+    color: #cccccc;
+    border: 1px solid #555555;
+    border-radius: 2px;
+}
+QComboBox:hover {
+    background-color: #4a4a4a;
+}
+QComboBox::drop-down {
+    border: none;
+}
+QComboBox QAbstractItemView {
+    background-color: #3c3c3c;
+    color: #cccccc;
+    selection-background-color: #094771;
+}</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>Все статусы</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Свободна</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>На объекте</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>В ремонте</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Списана</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Expanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
     </item>
     <item>
@@ -93,13 +269,313 @@ QStatusBar {
        <enum>Qt::Orientation::Horizontal</enum>
       </property>
       <widget class="QWidget" name="tableContainer" native="true"/>
-      <widget class="QWidget" name="detailsContainer" native="true">
+      <widget class="QWidget" name="detailsPanel" native="true">
        <property name="minimumSize">
         <size>
          <width>300</width>
          <height>0</height>
         </size>
        </property>
+       <layout class="QVBoxLayout" name="detailsPanelLayout">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <property name="leftMargin">
+         <number>12</number>
+        </property>
+        <property name="topMargin">
+         <number>12</number>
+        </property>
+        <property name="rightMargin">
+         <number>12</number>
+        </property>
+        <property name="bottomMargin">
+         <number>12</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="detailsTitle">
+          <property name="text">
+           <string>ДЕТАЛИ ТЕХНИКИ</string>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: #858585; font-weight: bold; font-size: 11px; padding-bottom: 4px;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="infoGroup">
+          <property name="styleSheet">
+           <string notr="true">QGroupBox {
+    background-color: #252526;
+    border: 1px solid #3e3e3e;
+    border-radius: 4px;
+    padding: 12px;
+}</string>
+          </property>
+          <layout class="QVBoxLayout" name="infoLayout">
+           <property name="spacing">
+            <number>8</number>
+           </property>
+           <item>
+            <layout class="QVBoxLayout" name="detailsNameLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsNameLabel">
+               <property name="text">
+                <string>НАЗВАНИЕ</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsName">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsTypeLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsTypeLabel">
+               <property name="text">
+                <string>ТИП ТЕХНИКИ</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsType">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsSerialLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsSerialLabel">
+               <property name="text">
+                <string>СЕРИЙНЫЙ НОМЕР</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsSerial">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsYearLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsYearLabel">
+               <property name="text">
+                <string>ГОД ВЫПУСКА</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsYear">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsStatusLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsStatusLabel">
+               <property name="text">
+                <string>СТАТУС</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsStatus">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsCostLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsCostLabel">
+               <property name="text">
+                <string>СТОИМОСТЬ</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsCost">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsProjectLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsProjectLabel">
+               <property name="text">
+                <string>ТЕКУЩИЙ ПРОЕКТ</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsProject">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsAssignedDateLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsAssignedDateLabel">
+               <property name="text">
+                <string>НАЗНАЧЕН С</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsAssignedDate">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="detailsVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Policy::Expanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

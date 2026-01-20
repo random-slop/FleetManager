@@ -30,9 +30,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_tableView(nullptr)
     , m_projectTableModel(nullptr)
     , m_projectTableView(nullptr)
-    , m_statusFilter(nullptr)
-    , m_btnFleet(nullptr)
-    , m_btnProjects(nullptr)
 {
     ui->setupUi(this);
     
@@ -57,8 +54,6 @@ void MainWindow::setupUI()
     for (QObject *obj : ui->toolBar->children())
         if (const auto widget = qobject_cast<QWidget*>(obj))
             widget->setContextMenuPolicy(Qt::NoContextMenu);
-
-    setupSidebar();
     
     // Создаем StackedWidget для переключения между таблицами
     m_stackedWidget = new QStackedWidget();
@@ -80,7 +75,15 @@ void MainWindow::setupUI()
     
     fleetSplitter->addWidget(tableContainer);
     
-    setupDetailsPanel();
+    m_detailsPanel = ui->detailsPanel;
+    m_detailsName = ui->detailsName;
+    m_detailsType = ui->detailsType;
+    m_detailsSerial = ui->detailsSerial;
+    m_detailsYear = ui->detailsYear;
+    m_detailsStatus = ui->detailsStatus;
+    m_detailsCost = ui->detailsCost;
+    m_detailsProject = ui->detailsProject;
+    m_detailsAssignedDate = ui->detailsAssignedDate;
     fleetSplitter->addWidget(m_detailsPanel);
     
     fleetLayout->addWidget(fleetSplitter);
@@ -105,92 +108,6 @@ void MainWindow::setupUI()
         }
         hLayout->addWidget(m_stackedWidget);
     }
-}
-
-void MainWindow::setupSidebar()
-{
-    // Боковая панель с навигацией и фильтрами
-    QVBoxLayout *sidebarLayout = new QVBoxLayout(ui->sidebarWidget);
-    sidebarLayout->setContentsMargins(8, 8, 8, 8);
-    sidebarLayout->setSpacing(8);
-    
-    // Заголовок навигации
-    QLabel *navTitle = new QLabel("НАВИГАЦИЯ");
-    navTitle->setStyleSheet("color: #858585; font-weight: bold; font-size: 11px; padding-bottom: 4px;");
-    sidebarLayout->addWidget(navTitle);
-    
-    // Кнопки навигации
-    m_btnFleet = new QPushButton("Парк техники");
-    m_btnFleet->setStyleSheet(R"(
-        QPushButton {
-            text-align: left;
-            padding: 8px 12px;
-            background-color: #094771;
-            color: white;
-            border: none;
-            border-radius: 2px;
-        }
-        QPushButton:hover {
-            background-color: #0e639c;
-        }
-    )");
-    sidebarLayout->addWidget(m_btnFleet);
-    
-    m_btnProjects = new QPushButton("Проекты");
-    m_btnProjects->setStyleSheet(R"(
-        QPushButton {
-            text-align: left;
-            padding: 8px 12px;
-            background-color: transparent;
-            color: #cccccc;
-            border: none;
-        }
-        QPushButton:hover {
-            background-color: #2a2d2e;
-        }
-    )");
-    sidebarLayout->addWidget(m_btnProjects);
-    
-    QPushButton *btnSettings = new QPushButton("Настройки");
-    btnSettings->setStyleSheet(m_btnProjects->styleSheet());
-    sidebarLayout->addWidget(btnSettings);
-    
-    sidebarLayout->addSpacing(20);
-    
-    // Фильтр по статусу
-    QLabel *filterTitle = new QLabel("ФИЛЬТР");
-    filterTitle->setStyleSheet("color: #858585; font-weight: bold; font-size: 11px; padding-bottom: 4px;");
-    sidebarLayout->addWidget(filterTitle);
-    
-    m_statusFilter = new QComboBox();
-    m_statusFilter->addItem("Все статусы");
-    m_statusFilter->addItem("Свободна");
-    m_statusFilter->addItem("На объекте");
-    m_statusFilter->addItem("В ремонте");
-    m_statusFilter->addItem("Списана");
-    m_statusFilter->setStyleSheet(R"(
-        QComboBox {
-            padding: 6px;
-            background-color: #3c3c3c;
-            color: #cccccc;
-            border: 1px solid #555555;
-            border-radius: 2px;
-        }
-        QComboBox:hover {
-            background-color: #4a4a4a;
-        }
-        QComboBox::drop-down {
-            border: none;
-        }
-        QComboBox QAbstractItemView {
-            background-color: #3c3c3c;
-            color: #cccccc;
-            selection-background-color: #094771;
-        }
-    )");
-    sidebarLayout->addWidget(m_statusFilter);
-    
-    sidebarLayout->addStretch();
 }
 
 void MainWindow::setupTable()
@@ -283,71 +200,11 @@ void MainWindow::setupProjectsTable()
     connect(m_projectTableView, &QTableView::doubleClicked, this, &MainWindow::onEditProject);
 }
 
-void MainWindow::setupDetailsPanel()
-{
-    m_detailsPanel = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(m_detailsPanel);
-    layout->setContentsMargins(12, 12, 12, 12);
-    layout->setSpacing(10);
-    
-    // Заголовок панели
-    QLabel *title = new QLabel("ДЕТАЛИ ТЕХНИКИ");
-    title->setStyleSheet("color: #858585; font-weight: bold; font-size: 11px; padding-bottom: 4px;");
-    layout->addWidget(title);
-    
-    // Группа с информацией
-    QGroupBox *infoGroup = new QGroupBox();
-    infoGroup->setStyleSheet(R"(
-        QGroupBox {
-            background-color: #252526;
-            border: 1px solid #3e3e3e;
-            border-radius: 4px;
-            padding: 12px;
-        }
-    )");
-    QVBoxLayout *infoLayout = new QVBoxLayout(infoGroup);
-    infoLayout->setSpacing(8);
-    
-    // Создаём метки для отображения информации
-    auto createInfoLabel = [](const QString& title, QLabel** valueLabel) -> QWidget* {
-        QWidget *widget = new QWidget();
-        QVBoxLayout *vbox = new QVBoxLayout(widget);
-        vbox->setContentsMargins(0, 0, 0, 0);
-        vbox->setSpacing(2);
-        
-        QLabel *titleLabel = new QLabel(title);
-        titleLabel->setStyleSheet("color: #858585; font-size: 10px;");
-        vbox->addWidget(titleLabel);
-        
-        *valueLabel = new QLabel("—");
-        (*valueLabel)->setStyleSheet("color: #d4d4d4; font-size: 12px; font-weight: 500;");
-        (*valueLabel)->setWordWrap(true);
-        vbox->addWidget(*valueLabel);
-        
-        return widget;
-    };
-    
-    infoLayout->addWidget(createInfoLabel("НАЗВАНИЕ", &m_detailsName));
-    infoLayout->addWidget(createInfoLabel("ТИП ТЕХНИКИ", &m_detailsType));
-    infoLayout->addWidget(createInfoLabel("СЕРИЙНЫЙ НОМЕР", &m_detailsSerial));
-    infoLayout->addWidget(createInfoLabel("ГОД ВЫПУСКА", &m_detailsYear));
-    infoLayout->addWidget(createInfoLabel("СТАТУС", &m_detailsStatus));
-    infoLayout->addWidget(createInfoLabel("СТОИМОСТЬ", &m_detailsCost));
-    infoLayout->addWidget(createInfoLabel("ТЕКУЩИЙ ПРОЕКТ", &m_detailsProject));
-    infoLayout->addWidget(createInfoLabel("НАЗНАЧЕН С", &m_detailsAssignedDate));
-    
-    layout->addWidget(infoGroup);
-    layout->addStretch();
-    
-    // Изначально показываем пустую панель
-    updateDetailsPanel(nullptr);
-}
-
 void MainWindow::connectSignals()
 {
     // Подключаем кнопки навигации
-    connect(m_btnFleet, &QPushButton::clicked, this, &MainWindow::showFleetView);
-    connect(m_btnProjects, &QPushButton::clicked, this, &MainWindow::showProjectsView);
+    connect(ui->btnFleet, &QPushButton::clicked, this, &MainWindow::showFleetView);
+    connect(ui->btnProjects, &QPushButton::clicked, this, &MainWindow::showProjectsView);
 
     // Подключаем действия меню и toolbar
     connect(ui->actionAdd, &QAction::triggered, this, [this](){
@@ -376,14 +233,16 @@ void MainWindow::connectSignals()
     connect(m_projectTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::updateToolbarButtonsState);
     
     // Подключаем фильтр по статусу
-    connect(m_statusFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onStatusFilterChanged);
+    connect(ui->statusFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onStatusFilterChanged);
 
 }
 
 void MainWindow::showFleetView()
 {
     m_stackedWidget->setCurrentIndex(0);
-    m_btnFleet->setStyleSheet(R"(
+    
+    // Swap styles between buttons - btnFleet becomes active (blue), btnProjects becomes inactive
+    QString activeStyle = R"(
         QPushButton {
             text-align: left;
             padding: 8px 12px;
@@ -392,8 +251,12 @@ void MainWindow::showFleetView()
             border: none;
             border-radius: 2px;
         }
-    )");
-    m_btnProjects->setStyleSheet(R"(
+        QPushButton:hover {
+            background-color: #0e639c;
+        }
+    )";
+    
+    QString inactiveStyle = R"(
         QPushButton {
             text-align: left;
             padding: 8px 12px;
@@ -402,16 +265,34 @@ void MainWindow::showFleetView()
             border: none;
         }
         QPushButton:hover { background-color: #2a2d2e; }
-    )");
-    m_statusFilter->setEnabled(true);
+    )";
+    
+    ui->btnFleet->setStyleSheet(activeStyle);
+    ui->btnProjects->setStyleSheet(inactiveStyle);
+    ui->statusFilter->setEnabled(true);
     updateToolbarButtonsState();
 }
 
 void MainWindow::showProjectsView()
 {
     m_stackedWidget->setCurrentIndex(1);
-    m_btnProjects->setStyleSheet(m_btnFleet->styleSheet());
-    m_btnFleet->setStyleSheet(R"(
+    
+    // Swap styles - btnProjects becomes active (blue), btnFleet becomes inactive
+    QString activeStyle = R"(
+        QPushButton {
+            text-align: left;
+            padding: 8px 12px;
+            background-color: #094771;
+            color: white;
+            border: none;
+            border-radius: 2px;
+        }
+        QPushButton:hover {
+            background-color: #0e639c;
+        }
+    )";
+    
+    QString inactiveStyle = R"(
         QPushButton {
             text-align: left;
             padding: 8px 12px;
@@ -420,8 +301,11 @@ void MainWindow::showProjectsView()
             border: none;
         }
         QPushButton:hover { background-color: #2a2d2e; }
-    )");
-    m_statusFilter->setEnabled(false);
+    )";
+    
+    ui->btnProjects->setStyleSheet(activeStyle);
+    ui->btnFleet->setStyleSheet(inactiveStyle);
+    ui->statusFilter->setEnabled(false);
     updateToolbarButtonsState();
 }
 

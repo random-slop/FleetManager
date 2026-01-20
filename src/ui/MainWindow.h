@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QPushButton>
 #include "../models/Machine.h"
 #include "../models/Project.h"
 
@@ -77,11 +76,6 @@ private:
     void setupUI();
     
     /**
-     * @brief Создание боковой панели навигации
-     */
-    void setupSidebar();
-    
-    /**
      * @brief Создание таблицы с техникой
      */
     void setupTable();
@@ -90,11 +84,6 @@ private:
      * @brief Создание таблицы с проектами
      */
     void setupProjectsTable();
-    
-    /**
-     * @brief Создание панели с деталями выбранной техники
-     */
-    void setupDetailsPanel();
     
     /**
      * @brief Подключение сигналов и слотов
@@ -167,10 +156,10 @@ private:
     QLabel *m_detailsProject;
     QLabel *m_detailsAssignedDate;
     
-    // Фильтр по статусу
-    QComboBox *m_statusFilter;
+    // Фильтр по статусу (теперь доступен через ui->statusFilter)
+    // QComboBox *m_statusFilter;
 
-    // Кнопки навигации
-    QPushButton *m_btnFleet;
-    QPushButton *m_btnProjects;
+    // Кнопки навигации (теперь доступны через ui->btnFleet, ui->btnProjects)
+    // QPushButton *m_btnFleet;
+    // QPushButton *m_btnProjects;
 };
