@@ -217,11 +217,6 @@
         </item>
         <item>
          <property name="text">
-          <string>На объекте</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>В ремонте</string>
          </property>
         </item>
