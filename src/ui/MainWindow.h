@@ -11,6 +11,7 @@ QT_END_NAMESPACE
 class MachineTableModel;
 class ProjectTableModel;
 class AssignMachineDialog;
+class SettingsDialog;
 class QTableView;
 class QLabel;
 class QVBoxLayout;
@@ -54,6 +55,7 @@ private slots:
     void onAssignToProject();
     void onReturnFromProject();
     void onSendToRepair();
+    void onShowSettings();
     
     // Слот для обработки выбора строки в таблице
     void onTableSelectionChanged() const;

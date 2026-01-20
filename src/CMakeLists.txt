@@ -40,6 +40,9 @@ add_executable(FleetManager
 	ui/AssignMachineDialog.h
 	ui/AssignMachineDialog.cpp
 	ui/AssignMachineDialog.ui
+	ui/SettingsDialog.h
+	ui/SettingsDialog.cpp
+	ui/SettingsDialog.ui
 )
 
 target_link_libraries(FleetManager

@@ -155,11 +155,6 @@ public:
     double getCurrencyRate(const QString& fromCurrency, const QString& toCurrency);
     
     /**
-     * @brief Загрузить все курсы валют из БД в память
-     */
-    void loadCurrencyRates();
-    
-    /**
      * @brief Получить все курсы валют
      * @return Map с ключами вида "USD_RUB" и значениями курса
      */

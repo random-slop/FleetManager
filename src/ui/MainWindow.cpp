@@ -5,6 +5,7 @@
 #include "MachineDialog.h"
 #include "ProjectDialog.h"
 #include "AssignMachineDialog.h"
+#include "SettingsDialog.h"
 #include "../database/FleetDatabase.h"
 #include <QTableView>
 #include <QVBoxLayout>
@@ -205,6 +206,7 @@ void MainWindow::connectSignals()
     // Подключаем кнопки навигации
     connect(ui->btnFleet, &QPushButton::clicked, this, &MainWindow::showFleetView);
     connect(ui->btnProjects, &QPushButton::clicked, this, &MainWindow::showProjectsView);
+    connect(ui->btnSettings, &QPushButton::clicked, this, &MainWindow::onShowSettings);
 
     // Подключаем действия меню и toolbar
     connect(ui->actionAdd, &QAction::triggered, this, [this](){
@@ -818,4 +820,10 @@ void MainWindow::updateActionTexts()
             ui->actionSendToRepair->setToolTip("Отправить технику в ремонт");
         }
     }
+}
+
+void MainWindow::onShowSettings()
+{
+    SettingsDialog dialog(this);
+    dialog.exec();
 }

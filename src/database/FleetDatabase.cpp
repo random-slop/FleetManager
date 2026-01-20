@@ -119,8 +119,7 @@ void FleetDatabase::initializeDefaultCurrencyRates()
     // Проверяем, есть ли уже курсы в базе
     QSqlQuery checkQuery("SELECT COUNT(*) FROM currency_rates");
     if (checkQuery.next() && checkQuery.value(0).toInt() > 0) {
-        // Курсы уже есть, загружаем их в память
-        loadCurrencyRates();
+        qDebug() << "Курсы валют готовы к использованию из БД";
         return;
     }
     
@@ -561,18 +560,12 @@ double FleetDatabase::getCurrencyRate(const QString& fromCurrency, const QString
     query.addBindValue(fromCurrency);
     query.addBindValue(toCurrency);
     
-    if (query.exec() && query.next()) {
+    if (query.exec() && query.next())
         return query.value("rate").toDouble();
-    }
-    
+
     return 1.0; // По умолчанию
 }
 
-void FleetDatabase::loadCurrencyRates()
-{
-    // Методы Money::getExchangeRate() теперь автоматически получают курсы из БД
-    qDebug() << "Курсы валют готовы к использованию из БД";
-}
 
 QMap<QString, double> FleetDatabase::getAllCurrencyRates()
 {
