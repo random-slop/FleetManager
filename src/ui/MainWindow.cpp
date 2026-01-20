@@ -1,7 +1,10 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "MachineTableModel.h"
+#include "ProjectTableModel.h"
 #include "MachineDialog.h"
+#include "ProjectDialog.h"
+#include "AssignMachineDialog.h"
 #include "../database/FleetDatabase.h"
 #include <QTableView>
 #include <QVBoxLayout>
@@ -14,14 +17,21 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QDebug>
+#include <QStackedWidget>
+#include <QSplitter>
 #include <tuple>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_stackedWidget(nullptr)
     , m_tableModel(nullptr)
     , m_tableView(nullptr)
+    , m_projectTableModel(nullptr)
+    , m_projectTableView(nullptr)
     , m_statusFilter(nullptr)
+    , m_btnFleet(nullptr)
+    , m_btnProjects(nullptr)
 {
     ui->setupUi(this);
     setupUI();
@@ -29,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     
     // Загрузка данных
     m_tableModel->loadData();
+    m_projectTableModel->refresh();
     updateStatusBar();
 }
 
@@ -40,8 +51,52 @@ MainWindow::~MainWindow()
 void MainWindow::setupUI()
 {
     setupSidebar();
+    
+    // Создаем StackedWidget для переключения между таблицами
+    m_stackedWidget = new QStackedWidget();
+    
+    // Контейнер для техники (таблица + детали)
+    QWidget *fleetView = new QWidget();
+    QHBoxLayout *fleetLayout = new QHBoxLayout(fleetView);
+    fleetLayout->setContentsMargins(0, 0, 0, 0);
+    fleetLayout->setSpacing(0);
+    
+    QSplitter *fleetSplitter = new QSplitter(Qt::Horizontal);
+    
+    QWidget *tableContainer = new QWidget();
+    QVBoxLayout *tableLayout = new QVBoxLayout(tableContainer);
+    tableLayout->setContentsMargins(0, 0, 0, 0);
+    
     setupTable();
+    tableLayout->addWidget(m_tableView);
+    
+    fleetSplitter->addWidget(tableContainer);
+    
     setupDetailsPanel();
+    fleetSplitter->addWidget(m_detailsPanel);
+    
+    fleetLayout->addWidget(fleetSplitter);
+    
+    // Контейнер для проектов
+    QWidget *projectsView = new QWidget();
+    QVBoxLayout *projectsLayout = new QVBoxLayout(projectsView);
+    projectsLayout->setContentsMargins(0, 0, 0, 0);
+    
+    setupProjectsTable();
+    projectsLayout->addWidget(m_projectTableView);
+    
+    m_stackedWidget->addWidget(fleetView);
+    m_stackedWidget->addWidget(projectsView);
+    
+    // Заменяем старый splitter в UI на наш stackedWidget
+    QHBoxLayout *hLayout = qobject_cast<QHBoxLayout*>(ui->centralwidget->layout());
+    if (hLayout) {
+        // Удаляем splitter
+        if (ui->splitter) {
+            delete ui->splitter;
+        }
+        hLayout->addWidget(m_stackedWidget);
+    }
 }
 
 void MainWindow::setupSidebar()
@@ -57,8 +112,8 @@ void MainWindow::setupSidebar()
     sidebarLayout->addWidget(navTitle);
     
     // Кнопки навигации
-    QPushButton *btnFleet = new QPushButton("📋 Парк техники");
-    btnFleet->setStyleSheet(R"(
+    m_btnFleet = new QPushButton("📋 Парк техники");
+    m_btnFleet->setStyleSheet(R"(
         QPushButton {
             text-align: left;
             padding: 8px 12px;
@@ -71,10 +126,10 @@ void MainWindow::setupSidebar()
             background-color: #0e639c;
         }
     )");
-    sidebarLayout->addWidget(btnFleet);
+    sidebarLayout->addWidget(m_btnFleet);
     
-    QPushButton *btnProjects = new QPushButton("🏗️ Проекты");
-    btnProjects->setStyleSheet(R"(
+    m_btnProjects = new QPushButton("🏗️ Проекты");
+    m_btnProjects->setStyleSheet(R"(
         QPushButton {
             text-align: left;
             padding: 8px 12px;
@@ -86,18 +141,18 @@ void MainWindow::setupSidebar()
             background-color: #2a2d2e;
         }
     )");
-    sidebarLayout->addWidget(btnProjects);
+    sidebarLayout->addWidget(m_btnProjects);
     
     QPushButton *btnHistory = new QPushButton("📜 История");
-    btnHistory->setStyleSheet(btnProjects->styleSheet());
+    btnHistory->setStyleSheet(m_btnProjects->styleSheet());
     sidebarLayout->addWidget(btnHistory);
     
     QPushButton *btnReports = new QPushButton("📊 Отчёты");
-    btnReports->setStyleSheet(btnProjects->styleSheet());
+    btnReports->setStyleSheet(m_btnProjects->styleSheet());
     sidebarLayout->addWidget(btnReports);
     
     QPushButton *btnSettings = new QPushButton("⚙️ Настройки");
-    btnSettings->setStyleSheet(btnProjects->styleSheet());
+    btnSettings->setStyleSheet(m_btnProjects->styleSheet());
     sidebarLayout->addWidget(btnSettings);
     
     sidebarLayout->addSpacing(20);
@@ -200,16 +255,35 @@ void MainWindow::setupTable()
     m_tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested,
             this, &MainWindow::showColumnHeaderMenu);
+}
+
+void MainWindow::setupProjectsTable()
+{
+    m_projectTableModel = new ProjectTableModel(this);
+    m_projectTableView = new QTableView();
+    m_projectTableView->setModel(m_projectTableModel);
+    m_projectTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_projectTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_projectTableView->setAlternatingRowColors(true);
+    m_projectTableView->verticalHeader()->setVisible(false);
+    m_projectTableView->horizontalHeader()->setStretchLastSection(true);
+    m_projectTableView->setStyleSheet(m_tableView->styleSheet());
     
-    // Добавляем таблицу в контейнер
-    QVBoxLayout *tableLayout = new QVBoxLayout(ui->tableContainer);
-    tableLayout->setContentsMargins(0, 0, 0, 0);
-    tableLayout->addWidget(m_tableView);
+    m_projectTableView->setColumnWidth(0, 50);  // ID
+    m_projectTableView->setColumnWidth(1, 300); // Название
+    m_projectTableView->setColumnWidth(2, 150); // Дата начала
+    m_projectTableView->setColumnWidth(3, 150); // Дата окончания
+    
+    m_projectTableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_projectTableView, &QTableView::customContextMenuRequested,
+            this, &MainWindow::showProjectContextMenu);
+    
+    connect(m_projectTableView, &QTableView::doubleClicked, this, &MainWindow::onEditProject);
 }
 
 void MainWindow::setupDetailsPanel()
 {
-    m_detailsPanel = ui->detailsContainer;
+    m_detailsPanel = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(m_detailsPanel);
     layout->setContentsMargins(12, 12, 12, 12);
     layout->setSpacing(10);
@@ -269,10 +343,24 @@ void MainWindow::setupDetailsPanel()
 
 void MainWindow::connectSignals()
 {
+    // Подключаем кнопки навигации
+    connect(m_btnFleet, &QPushButton::clicked, this, &MainWindow::showFleetView);
+    connect(m_btnProjects, &QPushButton::clicked, this, &MainWindow::showProjectsView);
+
     // Подключаем действия меню и toolbar
-    connect(ui->actionAdd, &QAction::triggered, this, &MainWindow::onAddMachine);
-    connect(ui->actionEdit, &QAction::triggered, this, &MainWindow::onEditMachine);
-    connect(ui->actionDelete, &QAction::triggered, this, &MainWindow::onDeleteMachine);
+    connect(ui->actionAdd, &QAction::triggered, this, [this](){
+        if (m_stackedWidget->currentIndex() == 0) onAddMachine();
+        else onAddProject();
+    });
+    connect(ui->actionEdit, &QAction::triggered, this, [this](){
+        if (m_stackedWidget->currentIndex() == 0) onEditMachine();
+        else onEditProject();
+    });
+    connect(ui->actionDelete, &QAction::triggered, this, [this](){
+        if (m_stackedWidget->currentIndex() == 0) onDeleteMachine();
+        else onDeleteProject();
+    });
+
     connect(ui->actionAssignToProject, &QAction::triggered, this, &MainWindow::onAssignToProject);
     connect(ui->actionReturnFromProject, &QAction::triggered, this, &MainWindow::onReturnFromProject);
     connect(ui->actionSendToRepair, &QAction::triggered, this, &MainWindow::onSendToRepair);
@@ -281,9 +369,53 @@ void MainWindow::connectSignals()
     
     // Подключаем выбор строки в таблице
     connect(m_tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableSelectionChanged);
+    connect(m_projectTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::onProjectSelectionChanged);
     
     // Подключаем фильтр по статусу
     connect(m_statusFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onStatusFilterChanged);
+}
+
+void MainWindow::showFleetView()
+{
+    m_stackedWidget->setCurrentIndex(0);
+    m_btnFleet->setStyleSheet(R"(
+        QPushButton {
+            text-align: left;
+            padding: 8px 12px;
+            background-color: #094771;
+            color: white;
+            border: none;
+            border-radius: 2px;
+        }
+    )");
+    m_btnProjects->setStyleSheet(R"(
+        QPushButton {
+            text-align: left;
+            padding: 8px 12px;
+            background-color: transparent;
+            color: #cccccc;
+            border: none;
+        }
+        QPushButton:hover { background-color: #2a2d2e; }
+    )");
+    m_statusFilter->setEnabled(true);
+}
+
+void MainWindow::showProjectsView()
+{
+    m_stackedWidget->setCurrentIndex(1);
+    m_btnProjects->setStyleSheet(m_btnFleet->styleSheet());
+    m_btnFleet->setStyleSheet(R"(
+        QPushButton {
+            text-align: left;
+            padding: 8px 12px;
+            background-color: transparent;
+            color: #cccccc;
+            border: none;
+        }
+        QPushButton:hover { background-color: #2a2d2e; }
+    )");
+    m_statusFilter->setEnabled(false);
 }
 
 void MainWindow::onAddMachine()
@@ -349,6 +481,58 @@ void MainWindow::onDeleteMachine()
     }
 }
 
+void MainWindow::onAddProject()
+{
+    ProjectDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        const auto project = dialog.getProject();
+        if (FleetDatabase::instance().addProject(project)) {
+            m_projectTableModel->refresh();
+            QMessageBox::information(this, "Добавление",
+                                   QString("Проект \"%1\" успешно добавлен").arg(project->getName()));
+        } else QMessageBox::critical(this, "Ошибка", "Не удалось добавить проект");
+    }
+}
+
+void MainWindow::onEditProject()
+{
+    const auto project = getSelectedProject();
+    if (!project) {
+        QMessageBox::warning(this, "Редактирование", "Выберите проект для редактирования");
+        return;
+    }
+    
+    ProjectDialog dialog(this, project);
+    if (dialog.exec() == QDialog::Accepted) {
+        const auto updatedProject = dialog.getProject();
+        if (FleetDatabase::instance().updateProject(updatedProject)) {
+            m_projectTableModel->refresh();
+            QMessageBox::information(this, "Редактирование",
+                                   QString("Проект \"%1\" успешно обновлен").arg(updatedProject->getName()));
+        } else QMessageBox::critical(this, "Ошибка", "Не удалось обновить проект");
+    }
+}
+
+void MainWindow::onDeleteProject()
+{
+    const auto project = getSelectedProject();
+    if (!project) {
+        QMessageBox::warning(this, "Удаление", "Выберите проект для удаления");
+        return;
+    }
+    
+    const auto reply = QMessageBox::question(this, "Подтверждение",
+                                      QString("Удалить проект \"%1\"?").arg(project->getName()),
+                                      QMessageBox::Yes | QMessageBox::No);
+    
+    if (reply == QMessageBox::Yes) {
+        if (FleetDatabase::instance().deleteProject(project->getId())) {
+            m_projectTableModel->refresh();
+            QMessageBox::information(this, "Удаление", "Проект успешно удален");
+        } else QMessageBox::critical(this, "Ошибка", "Не удалось удалить проект");
+    }
+}
+
 void MainWindow::onAssignToProject()
 {
     const auto machine = getSelectedMachine();
@@ -363,9 +547,29 @@ void MainWindow::onAssignToProject()
         return;
     }
     
-    // TODO: Диалог выбора проекта
-    QMessageBox::information(this, "Назначение на проект", 
-                           "Функция назначения на проект будет реализована в следующей версии");
+    AssignMachineDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        const auto project = dialog.getSelectedProject();
+        if (!project) {
+            QMessageBox::warning(this, "Назначение на проект", "Выберите проект");
+            return;
+        }
+        
+        machine->setStatus(MachineStatus::OnSite);
+        machine->setCurrentProject(project->getName());
+        machine->setAssignedDate(QDate::currentDate());
+        
+        if (FleetDatabase::instance().updateMachine(machine)) {
+            m_tableModel->loadData();
+            updateStatusBar();
+            onTableSelectionChanged();
+            QMessageBox::information(this, "Назначение на проект",
+                                   QString("Техника \"%1\" назначена на проект \"%2\"")
+                                   .arg(machine->getName(), project->getName()));
+        } else {
+            QMessageBox::critical(this, "Ошибка", "Не удалось назначить технику на проект");
+        }
+    }
 }
 
 void MainWindow::onReturnFromProject()
@@ -454,6 +658,11 @@ void MainWindow::onTableSelectionChanged() const
     updateDetailsPanel(machine);
 }
 
+void MainWindow::onProjectSelectionChanged() const
+{
+    // Можно добавить панель деталей для проектов, если нужно
+}
+
 void MainWindow::onStatusFilterChanged(int index) const
 {
     m_tableModel->setStatusFilter(index);
@@ -499,89 +708,83 @@ void MainWindow::updateDetailsPanel(const MachinePtr& machine) const
     Money cost = machine->getCost();
     QString costText = cost.toString();
     if (cost.getCurrency() != Currency::RUB) {
-        Money rubles = cost.convertTo(Currency::RUB);
-        costText += QString(" (%1)").arg(rubles.toString());
+        double rubAmount = cost.getAmount() * FleetDatabase::instance().getCurrencyRate(Money::getCurrencyName(cost.getCurrency()), "RUB");
+        costText += QString(" (%1)").arg(Money(rubAmount, Currency::RUB).toString());
     }
     m_detailsCost->setText(costText);
     
     m_detailsProject->setText(machine->getCurrentProject().isEmpty() ? "—" : machine->getCurrentProject());
-    m_detailsAssignedDate->setText(machine->getAssignedDate().isValid() ?
-                                  machine->getAssignedDate().toString("dd.MM.yyyy") : "—");
+    m_detailsAssignedDate->setText(machine->getAssignedDate().isValid() ? machine->getAssignedDate().toString("dd.MM.yyyy") : "—");
+}
+
+MachinePtr MainWindow::getSelectedMachine() const
+{
+    const QModelIndexList selection = m_tableView->selectionModel()->selectedRows();
+    if (selection.isEmpty()) return nullptr;
+    return m_tableModel->getMachine(selection.first().row());
+}
+
+ProjectPtr MainWindow::getSelectedProject() const
+{
+    const QModelIndexList selection = m_projectTableView->selectionModel()->selectedRows();
+    if (selection.isEmpty()) return nullptr;
+    return m_projectTableModel->getProject(selection.first().row());
+}
+
+void MainWindow::showContextMenu(const QPoint& pos)
+{
+    const QModelIndex index = m_tableView->indexAt(pos);
+    if (!index.isValid()) return;
+
+    QMenu menu(this);
+    menu.addAction(ui->actionEdit);
+    menu.addAction(ui->actionDelete);
+    menu.addSeparator();
+    menu.addAction(ui->actionAssignToProject);
+    menu.addAction(ui->actionReturnFromProject);
+    menu.addSeparator();
+    menu.addAction(ui->actionSendToRepair);
+    
+    menu.exec(m_tableView->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::showProjectContextMenu(const QPoint& pos)
+{
+    const QModelIndex index = m_projectTableView->indexAt(pos);
+    if (!index.isValid()) return;
+
+    QMenu menu(this);
+    QAction *editAction = menu.addAction("Редактировать проект");
+    QAction *deleteAction = menu.addAction("Удалить проект");
+    
+    connect(editAction, &QAction::triggered, this, &MainWindow::onEditProject);
+    connect(deleteAction, &QAction::triggered, this, &MainWindow::onDeleteProject);
+    
+    menu.exec(m_projectTableView->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::showColumnHeaderMenu(const QPoint& pos)
+{
+    QMenu menu(this);
+    for (int i = 0; i < m_tableModel->columnCount(); ++i) {
+        QString title = m_tableModel->headerData(i, Qt::Horizontal).toString();
+        QAction *action = menu.addAction(title);
+        action->setCheckable(true);
+        action->setChecked(!m_tableView->isColumnHidden(i));
+        
+        connect(action, &QAction::triggered, this, [this, i](bool checked){
+            m_tableView->setColumnHidden(i, !checked);
+        });
+    }
+    menu.exec(m_tableView->horizontalHeader()->mapToGlobal(pos));
 }
 
 void MainWindow::updateStatusBar() const
 {
     const auto stats = FleetDatabase::instance().getStatistics();
-    QString statusText = QString("Всего техники: %1  |  Выбрано: %2 из %3")
-                        .arg(stats.total)
-                        .arg(1) // TODO: Получить реальное количество выбранных
-                        .arg(24); // TODO: Получить реальное количество отфильтрованных
-    
-    // Добавляем статистику по статусам
-    statusText += QString("  |  Свободна: %1  |  На объектах: %2  |  В ремонте: %3")
-                 .arg(stats.available)
-                 .arg(stats.onSite)
-                 .arg(stats.inRepair);
-    
-    ui->statusbar->showMessage(statusText);
-}
-
-MachinePtr MainWindow::getSelectedMachine() const
-{
-    QModelIndexList selection = m_tableView->selectionModel()->selectedRows();
-    if (selection.isEmpty()) {
-        return nullptr;
-    }
-
-    const int row = selection.first().row();
-    return m_tableModel->getMachine(row);
-}
-
-void MainWindow::showContextMenu(const QPoint& pos)
-{
-    // Создаём контекстное меню
-    QMenu menu(this);
-    
-    // Добавляем действия
-    menu.addAction("Редактировать", this, &MainWindow::onEditMachine);
-    menu.addAction("Удалить", this, &MainWindow::onDeleteMachine);
-    menu.addSeparator();
-    menu.addAction("Назначить на проект", this, &MainWindow::onAssignToProject);
-    menu.addAction("Вернуть с проекта", this, &MainWindow::onReturnFromProject);
-    menu.addAction("Отправить в ремонт", this, &MainWindow::onSendToRepair);
-    
-    // Показываем меню в глобальных координатах
-    menu.exec(m_tableView->viewport()->mapToGlobal(pos));
-}
-
-void MainWindow::showColumnHeaderMenu(const QPoint& pos)
-{
-    QMenu menu;
-    
-    // Получить информацию о всех колонках
-    auto columnsInfo = m_tableModel->getColumnsInfo();
-    
-    // Создать чекбокс-действия для каждого столбца
-    QVector<QAction*> columnActions;
-    for (const auto& info : columnsInfo) {
-        int columnIndex = std::get<0>(info);
-        QString columnName = std::get<1>(info);
-        bool isVisible = std::get<2>(info);
-        
-        QAction *action = menu.addAction(columnName);
-        action->setCheckable(true);
-        action->setChecked(isVisible);
-        action->setData(columnIndex);
-        columnActions.append(action);
-    }
-    
-    // Показать меню
-    QAction *selectedAction = menu.exec(m_tableView->horizontalHeader()->mapToGlobal(pos));
-    
-    // Обработать выбранное действие
-    if (selectedAction) {
-        int columnIndex = selectedAction->data().toInt();
-        bool newVisibility = selectedAction->isChecked();
-        m_tableModel->setColumnVisible(columnIndex, newVisibility);
-    }
+    ui->statusbar->showMessage(QString("Всего: %1 | Свободно: %2 | На объектах: %3 | В ремонте: %4")
+                              .arg(stats.total)
+                              .arg(stats.available)
+                              .arg(stats.onSite)
+                              .arg(stats.inRepair));
 }

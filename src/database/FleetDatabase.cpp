@@ -82,8 +82,6 @@ bool FleetDatabase::createTables()
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
-            start_date TEXT NOT NULL,
-            end_date TEXT,
             description TEXT
         )
     )";
@@ -138,9 +136,9 @@ void FleetDatabase::createSampleData()
     qDebug() << "Создание тестовых данных...";
     
     // Добавляем проекты
-    const auto project1 = std::make_shared<Project>("ЖК «Солнечный»", QDate(2026, 1, 20));
-    const auto project2 = std::make_shared<Project>("БЦ «Меридиан»", QDate(2025, 11, 1));
-    const auto project3 = std::make_shared<Project>("Школа №15", QDate(2026, 1, 15));
+    const auto project1 = std::make_shared<Project>("ЖК «Солнечный»");
+    const auto project2 = std::make_shared<Project>("БЦ «Меридиан»");
+    const auto project3 = std::make_shared<Project>("Школа №15");
     
     addProject(project1);
     addProject(project2);
@@ -388,13 +386,11 @@ bool FleetDatabase::addProject(ProjectPtr project)
 {
     QSqlQuery query;
     query.prepare(R"(
-        INSERT INTO projects (name, start_date, end_date, description)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO projects (name, description)
+        VALUES (?, ?)
     )");
     
     query.addBindValue(project->getName());
-    query.addBindValue(project->getStartDate().toString(Qt::ISODate));
-    query.addBindValue(project->getEndDate().isValid() ? project->getEndDate().toString(Qt::ISODate) : QVariant());
     query.addBindValue(project->getDescription());
     
     if (!query.exec()) {
@@ -411,13 +407,11 @@ bool FleetDatabase::updateProject(ProjectPtr project)
     QSqlQuery query;
     query.prepare(R"(
         UPDATE projects 
-        SET name = ?, start_date = ?, end_date = ?, description = ?
+        SET name = ?, description = ?
         WHERE id = ?
     )");
     
     query.addBindValue(project->getName());
-    query.addBindValue(project->getStartDate().toString(Qt::ISODate));
-    query.addBindValue(project->getEndDate().isValid() ? project->getEndDate().toString(Qt::ISODate) : QVariant());
     query.addBindValue(project->getDescription());
     query.addBindValue(project->getId());
     
@@ -452,13 +446,6 @@ QVector<ProjectPtr> FleetDatabase::getAllProjects()
         auto project = std::make_shared<Project>();
         project->setId(query.value("id").toInt());
         project->setName(query.value("name").toString());
-        project->setStartDate(QDate::fromString(query.value("start_date").toString(), Qt::ISODate));
-        
-        QString endDateStr = query.value("end_date").toString();
-        if (!endDateStr.isEmpty()) {
-            project->setEndDate(QDate::fromString(endDateStr, Qt::ISODate));
-        }
-        
         project->setDescription(query.value("description").toString());
         projects.append(project);
     }
@@ -479,13 +466,6 @@ ProjectPtr FleetDatabase::getProjectById(int projectId)
     auto project = std::make_shared<Project>();
     project->setId(query.value("id").toInt());
     project->setName(query.value("name").toString());
-    project->setStartDate(QDate::fromString(query.value("start_date").toString(), Qt::ISODate));
-
-    const QString endDateStr = query.value("end_date").toString();
-    if (!endDateStr.isEmpty()) {
-        project->setEndDate(QDate::fromString(endDateStr, Qt::ISODate));
-    }
-    
     project->setDescription(query.value("description").toString());
     return project;
 }

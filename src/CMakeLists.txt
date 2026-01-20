@@ -32,6 +32,14 @@ add_executable(FleetManager
 	ui/MachineDialog.h
 	ui/MachineDialog.cpp
 	ui/MachineDialog.ui
+	ui/ProjectTableModel.h
+	ui/ProjectTableModel.cpp
+	ui/ProjectDialog.h
+	ui/ProjectDialog.cpp
+	ui/ProjectDialog.ui
+	ui/AssignMachineDialog.h
+	ui/AssignMachineDialog.cpp
+	ui/AssignMachineDialog.ui
 )
 
 target_link_libraries(FleetManager
@@ -40,4 +48,3 @@ target_link_libraries(FleetManager
 	Qt::Widgets
 	Qt::Sql
 )
-
