@@ -19,6 +19,7 @@
 #include <QDebug>
 #include <QStackedWidget>
 #include <QSplitter>
+#include <QSignalBlocker>
 #include <tuple>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -389,6 +390,7 @@ void MainWindow::connectSignals()
     
     // Подключаем фильтр по статусу
     connect(m_statusFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onStatusFilterChanged);
+
 }
 
 void MainWindow::showFleetView()
@@ -459,13 +461,18 @@ void MainWindow::onEditMachine()
         return;
     }
     
+    int selectedMachineId = machine->getId();
+    
     MachineDialog dialog(this, machine);
     if (dialog.exec() == QDialog::Accepted) {
         const auto updatedMachine = dialog.getMachine();
         if (FleetDatabase::instance().updateMachine(updatedMachine)) {
+            // Временно отключаем сигналы от выбора для предотвращения обновления panels during reload
+            const QSignalBlocker blocker(m_tableView->selectionModel());
+            
             m_tableModel->loadData();
             updateStatusBar();
-            onTableSelectionChanged(); // Обновляем панель деталей
+            restoreMachineSelection(selectedMachineId); // Восстанавливаем выделение
             updateToolbarButtonsState();
             QMessageBox::information(this, "Редактирование",
                                    QString("Техника \"%1\" успешно обновлена").arg(updatedMachine->getName()));
@@ -565,6 +572,8 @@ void MainWindow::onAssignToProject()
         return;
     }
     
+    int selectedMachineId = machine->getId();
+    
     // Если машина на объекте - вернуть с проекта
     if (machine->getStatus() == MachineStatus::OnSite) {
         machine->setStatus(MachineStatus::Available);
@@ -572,9 +581,10 @@ void MainWindow::onAssignToProject()
         machine->setAssignedDate(QDate());
         
         if (FleetDatabase::instance().updateMachine(machine)) {
+            const QSignalBlocker blocker(m_tableView->selectionModel());
             m_tableModel->loadData();
             updateStatusBar();
-            onTableSelectionChanged();
+            restoreMachineSelection(selectedMachineId);
             updateToolbarButtonsState();
             QMessageBox::information(this, "Возврат с проекта",
                                    QString("Техника \"%1\" возвращена в парк").arg(machine->getName()));
@@ -604,9 +614,10 @@ void MainWindow::onAssignToProject()
         machine->setAssignedDate(QDate::currentDate());
         
         if (FleetDatabase::instance().updateMachine(machine)) {
+            const QSignalBlocker blocker(m_tableView->selectionModel());
             m_tableModel->loadData();
             updateStatusBar();
-            onTableSelectionChanged();
+            restoreMachineSelection(selectedMachineId);
             updateToolbarButtonsState();
             QMessageBox::information(this, "Назначение на проект",
                                    QString("Техника \"%1\" назначена на проект \"%2\"")
@@ -632,6 +643,8 @@ void MainWindow::onSendToRepair()
         return;
     }
     
+    int selectedMachineId = machine->getId();
+    
     if (machine->getStatus() == MachineStatus::Decommissioned) {
         QMessageBox::warning(this, "Операция с ремонтом", "Списанную технику нельзя отправить в ремонт");
         return;
@@ -642,9 +655,10 @@ void MainWindow::onSendToRepair()
         machine->setStatus(MachineStatus::Available);
         
         if (FleetDatabase::instance().updateMachine(machine)) {
+            const QSignalBlocker blocker(m_tableView->selectionModel());
             m_tableModel->loadData();
             updateStatusBar();
-            onTableSelectionChanged();
+            restoreMachineSelection(selectedMachineId);
             updateToolbarButtonsState();
             QMessageBox::information(this, "Возврат из ремонта",
                                    QString("Техника \"%1\" возвращена из ремонта").arg(machine->getName()));
@@ -665,9 +679,10 @@ void MainWindow::onSendToRepair()
     }
     
     if (FleetDatabase::instance().updateMachine(machine)) {
+        const QSignalBlocker blocker(m_tableView->selectionModel());
         m_tableModel->loadData();
         updateStatusBar();
-        onTableSelectionChanged();
+        restoreMachineSelection(selectedMachineId);
         updateToolbarButtonsState();
         QMessageBox::information(this, "Отправка в ремонт",
                                QString("Техника \"%1\" отправлена в ремонт").arg(machine->getName()));
@@ -871,6 +886,29 @@ void MainWindow::updateToolbarButtonsState()
     }
     
     updateActionTexts();
+}
+
+int MainWindow::saveSelectedMachineId() const
+{
+    const auto machine = getSelectedMachine();
+    return machine ? machine->getId() : -1;
+}
+
+void MainWindow::restoreMachineSelection(int machineId)
+{
+    if (machineId <= 0) return;
+    
+    // Ищем машину с заданным ID в модели
+    for (int row = 0; row < m_tableModel->rowCount(); ++row) {
+        const auto machine = m_tableModel->getMachine(row);
+        if (machine && machine->getId() == machineId) {
+            // Выбираем эту строку
+            QModelIndex index = m_tableModel->index(row, 0);
+            m_tableView->setCurrentIndex(index);
+            m_tableView->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+            return;
+        }
+    }
 }
 
 void MainWindow::updateActionTexts()

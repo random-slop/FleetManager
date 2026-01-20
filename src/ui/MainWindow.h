@@ -123,6 +123,16 @@ private:
     void updateActionTexts();
     
     /**
+     * @brief Сохранить ID выбранной машины
+     */
+    int saveSelectedMachineId() const;
+    
+    /**
+     * @brief Восстановить выбор машины по ID
+     */
+    void restoreMachineSelection(int machineId);
+    
+    /**
      * @brief Получить выбранную технику из таблицы
      * @return Указатель на выбранную технику или nullptr
      */
