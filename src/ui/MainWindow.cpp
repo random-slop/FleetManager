@@ -175,9 +175,9 @@ void MainWindow::setupTable()
     )");
     
     // Устанавливаем ширину колонок
-    m_tableView->setColumnWidth(0, 300); // Название
-    m_tableView->setColumnWidth(1, 150); // Статус
-    m_tableView->setColumnWidth(2, 200); // Текущий проект
+    m_tableView->setColumnWidth(0, 250); // Название
+    m_tableView->setColumnWidth(1, 120); // Статус
+    m_tableView->setColumnWidth(3, 200); // Текущий проект
     
     // Включаем сортировку по колонкам
     m_tableView->setSortingEnabled(true);
@@ -269,33 +269,29 @@ void MainWindow::connectSignals()
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onExit);
     
     // Подключаем выбор строки в таблице
-    connect(m_tableView->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &MainWindow::onTableSelectionChanged);
+    connect(m_tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableSelectionChanged);
     
     // Подключаем фильтр по статусу
-    connect(m_statusFilter, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &MainWindow::onStatusFilterChanged);
+    connect(m_statusFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onStatusFilterChanged);
 }
 
 void MainWindow::onAddMachine()
 {
     MachineDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
- auto machine = dialog.getMachine();
+        const auto machine = dialog.getMachine();
         if (FleetDatabase::instance().addMachine(machine)) {
             m_tableModel->loadData();
             updateStatusBar();
             QMessageBox::information(this, "Добавление",
                                    QString("Техника \"%1\" успешно добавлена").arg(machine->getName()));
-        } else {
-            QMessageBox::critical(this, "Ошибка", "Не удалось добавить технику в базу данных");
-        }
+        } else QMessageBox::critical(this, "Ошибка", "Не удалось добавить технику в базу данных");
     }
 }
 
 void MainWindow::onEditMachine()
 {
-    auto machine = getSelectedMachine();
+    const auto machine = getSelectedMachine();
     if (!machine) {
         QMessageBox::warning(this, "Редактирование", "Выберите технику для редактирования");
         return;
@@ -303,7 +299,7 @@ void MainWindow::onEditMachine()
     
     MachineDialog dialog(this, machine);
     if (dialog.exec() == QDialog::Accepted) {
-        auto updatedMachine = dialog.getMachine();
+        const auto updatedMachine = dialog.getMachine();
         if (FleetDatabase::instance().updateMachine(updatedMachine)) {
             m_tableModel->loadData();
             updateStatusBar();
@@ -318,14 +314,14 @@ void MainWindow::onEditMachine()
 
 void MainWindow::onDeleteMachine()
 {
-    auto machine = getSelectedMachine();
+    const auto machine = getSelectedMachine();
     if (!machine) {
         QMessageBox::warning(this, "Удаление", "Выберите технику для удаления");
         return;
     }
     
     // Подтверждение удаления
-    auto reply = QMessageBox::question(this, "Подтверждение удаления",
+    const auto reply = QMessageBox::question(this, "Подтверждение удаления",
                                       QString("Удалить технику \"%1\"?\nЭто действие нельзя отменить.")
                                       .arg(machine->getName()),
                                       QMessageBox::Yes | QMessageBox::No);
@@ -344,7 +340,7 @@ void MainWindow::onDeleteMachine()
 
 void MainWindow::onAssignToProject()
 {
-    auto machine = getSelectedMachine();
+    const auto machine = getSelectedMachine();
     if (!machine) {
         QMessageBox::warning(this, "Назначение на проект", "Выберите технику");
         return;
@@ -363,7 +359,7 @@ void MainWindow::onAssignToProject()
 
 void MainWindow::onReturnFromProject()
 {
-    auto machine = getSelectedMachine();
+    const auto machine = getSelectedMachine();
     if (!machine) {
         QMessageBox::warning(this, "Возврат с проекта", "Выберите технику");
         return;
@@ -386,14 +382,12 @@ void MainWindow::onReturnFromProject()
         onTableSelectionChanged(); // Обновляем панель деталей
         QMessageBox::information(this, "Возврат с проекта", 
                                QString("Техника \"%1\" возвращена в парк").arg(machine->getName()));
-    } else {
-        QMessageBox::critical(this, "Ошибка", "Не удалось обновить статус техники");
-    }
+    } else QMessageBox::critical(this, "Ошибка", "Не удалось обновить статус техники");
 }
 
 void MainWindow::onSendToRepair()
 {
-    auto machine = getSelectedMachine();
+    const auto machine = getSelectedMachine();
     if (!machine) {
         QMessageBox::warning(this, "Отправка в ремонт", "Выберите технику");
         return;
@@ -443,19 +437,19 @@ void MainWindow::onExit()
     close();
 }
 
-void MainWindow::onTableSelectionChanged()
+void MainWindow::onTableSelectionChanged() const
 {
-    auto machine = getSelectedMachine();
+    const auto machine = getSelectedMachine();
     updateDetailsPanel(machine);
 }
 
-void MainWindow::onStatusFilterChanged(int index)
+void MainWindow::onStatusFilterChanged(int index) const
 {
     m_tableModel->setStatusFilter(index);
     updateStatusBar();
 }
 
-void MainWindow::updateDetailsPanel(MachinePtr machine)
+void MainWindow::updateDetailsPanel(const MachinePtr& machine) const
 {
     if (!machine) {
         m_detailsName->setText("—");
@@ -490,15 +484,23 @@ void MainWindow::updateDetailsPanel(MachinePtr machine)
     m_detailsStatus->setText(QString("<span style='color: %1; font-weight: bold;'>%2</span>")
                             .arg(statusColor, statusText));
     
-    m_detailsCost->setText(QString("%1 ₽").arg(machine->getCost(), 0, 'f', 0));
+    // Стоимость в оригинальной валюте и в рублях в скобках
+    Money cost = machine->getCost();
+    QString costText = cost.toString();
+    if (cost.getCurrency() != Currency::RUB) {
+        Money rubles = cost.convertTo(Currency::RUB);
+        costText += QString(" (%1)").arg(rubles.toString());
+    }
+    m_detailsCost->setText(costText);
+    
     m_detailsProject->setText(machine->getCurrentProject().isEmpty() ? "—" : machine->getCurrentProject());
     m_detailsAssignedDate->setText(machine->getAssignedDate().isValid() ?
                                   machine->getAssignedDate().toString("dd.MM.yyyy") : "—");
 }
 
-void MainWindow::updateStatusBar()
+void MainWindow::updateStatusBar() const
 {
-    auto stats = FleetDatabase::instance().getStatistics();
+    const auto stats = FleetDatabase::instance().getStatistics();
     QString statusText = QString("Всего техники: %1  |  Выбрано: %2 из %3")
                         .arg(stats.total)
                         .arg(1) // TODO: Получить реальное количество выбранных
@@ -513,14 +515,14 @@ void MainWindow::updateStatusBar()
     ui->statusbar->showMessage(statusText);
 }
 
-MachinePtr MainWindow::getSelectedMachine()
+MachinePtr MainWindow::getSelectedMachine() const
 {
     QModelIndexList selection = m_tableView->selectionModel()->selectedRows();
     if (selection.isEmpty()) {
         return nullptr;
     }
-    
-    int row = selection.first().row();
+
+    const int row = selection.first().row();
     return m_tableModel->getMachine(row);
 }
 

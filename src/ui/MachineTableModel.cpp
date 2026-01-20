@@ -2,6 +2,7 @@
 #include "../database/FleetDatabase.h"
 #include <QBrush>
 #include <QColor>
+#include <algorithm>
 
 MachineTableModel::MachineTableModel(QObject *parent)
     : QAbstractTableModel(parent)
@@ -124,7 +125,7 @@ void MachineTableModel::applyFilter()
             case 2: targetStatus = MachineStatus::OnSite; break;
             case 3: targetStatus = MachineStatus::InRepair; break;
             case 4: targetStatus = MachineStatus::Decommissioned; break;
-            default: 
+            default:
                 m_machines = m_allMachines;
                 return;
         }
@@ -135,6 +136,46 @@ void MachineTableModel::applyFilter()
             }
         }
     }
+    
+    // Применить сортировку после фильтрации
+    if (m_sortColumn >= 0) {
+        sort(m_sortColumn, m_sortOrder);
+    }
+}
+
+void MachineTableModel::sort(int column, Qt::SortOrder order)
+{
+    if (column < 0 || column >= m_headers.size()) {
+        return;
+    }
+    
+    // Сохранить параметры сортировки
+    m_sortColumn = column;
+    m_sortOrder = order;
+    
+    // Выполнить сортировку
+    emit layoutAboutToBeChanged();
+    
+    std::sort(m_machines.begin(), m_machines.end(),
+        [column, order](const MachinePtr& a, const MachinePtr& b) {
+            bool result = false;
+            switch (column) {
+                case 0: // Название
+                    result = a->getName().toLower() < b->getName().toLower();
+                    break;
+                case 1: // Статус
+                    result = static_cast<int>(a->getStatus()) < static_cast<int>(b->getStatus());
+                    break;
+                case 2: // Текущий проект
+                    result = a->getCurrentProject().toLower() < b->getCurrentProject().toLower();
+                    break;
+                default:
+                    return false;
+            }
+            return order == Qt::AscendingOrder ? result : !result;
+        });
+    
+    emit layoutChanged();
 }
 
 int MachineTableModel::getRowById(int machineId) const

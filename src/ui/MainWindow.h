@@ -45,10 +45,10 @@ private slots:
     void onExit();
     
     // Слот для обработки выбора строки в таблице
-    void onTableSelectionChanged();
+    void onTableSelectionChanged() const;
     
     // Слот для фильтрации по статусу
-    void onStatusFilterChanged(int index);
+    void onStatusFilterChanged(int index) const;
     
     // Слот для контекстного меню
     void showContextMenu(const QPoint& pos);
@@ -83,18 +83,18 @@ private:
      * @brief Обновление панели деталей
      * @param machine Указатель на выбранную технику
      */
-    void updateDetailsPanel(MachinePtr machine);
+    void updateDetailsPanel(const MachinePtr& machine) const;
     
     /**
      * @brief Обновление статусбара с количеством техники
      */
-    void updateStatusBar();
+    void updateStatusBar() const;
     
     /**
      * @brief Получить выбранную технику из таблицы
      * @return Указатель на выбранную технику или nullptr
      */
-    MachinePtr getSelectedMachine();
+    MachinePtr getSelectedMachine() const;
     
     Ui::MainWindow *ui;
     MachineTableModel *m_tableModel;

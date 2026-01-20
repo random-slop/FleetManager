@@ -10,10 +10,7 @@ FleetDatabase& FleetDatabase::instance()
     return instance;
 }
 
-FleetDatabase::FleetDatabase()
-    : m_initialized(false)
-{
-}
+FleetDatabase::FleetDatabase(): m_initialized(false) {}
 
 FleetDatabase::~FleetDatabase()
 {
@@ -22,10 +19,8 @@ FleetDatabase::~FleetDatabase()
 
 bool FleetDatabase::initialize(const QString& dbPath)
 {
-    if (m_initialized) {
-        return true;
-    }
-    
+    if (m_initialized) return true;
+
     m_database = QSqlDatabase::addDatabase("QSQLITE");
     m_database.setDatabaseName(dbPath);
     
@@ -41,10 +36,9 @@ bool FleetDatabase::initialize(const QString& dbPath)
     
     // Создаём тестовые данные если база пустая
     QSqlQuery query("SELECT COUNT(*) FROM machines");
-    if (query.next() && query.value(0).toInt() == 0) {
+    if (query.next() && query.value(0).toInt() == 0)
         createSampleData();
-    }
-    
+
     m_initialized = true;
     qDebug() << "База данных успешно инициализирована:" << dbPath;
     return true;
@@ -63,7 +57,7 @@ bool FleetDatabase::createTables()
     QSqlQuery query;
     
     // Создаём таблицу техники
-    QString createMachinesTable = R"(
+    const QString createMachinesTable = R"(
         CREATE TABLE IF NOT EXISTS machines (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -72,6 +66,7 @@ bool FleetDatabase::createTables()
             year_of_manufacture INTEGER NOT NULL,
             status TEXT NOT NULL,
             cost REAL NOT NULL,
+            currency TEXT NOT NULL DEFAULT 'RUB',
             current_project TEXT,
             assigned_date TEXT
         )
@@ -83,7 +78,7 @@ bool FleetDatabase::createTables()
     }
     
     // Создаём таблицу проектов
-    QString createProjectsTable = R"(
+    const QString createProjectsTable = R"(
         CREATE TABLE IF NOT EXISTS projects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
@@ -98,8 +93,44 @@ bool FleetDatabase::createTables()
         return false;
     }
     
+    // Создаём таблицу курсов валют
+    const QString createCurrencyRatesTable = R"(
+        CREATE TABLE IF NOT EXISTS currency_rates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            from_currency TEXT NOT NULL,
+            to_currency TEXT NOT NULL,
+            rate REAL NOT NULL,
+            UNIQUE(from_currency, to_currency)
+        )
+    )";
+    
+    if (!query.exec(createCurrencyRatesTable)) {
+        qWarning() << "Ошибка создания таблицы currency_rates:" << query.lastError().text();
+        return false;
+    }
+    
+    // Инициализируем курсы валют по умолчанию
+    initializeDefaultCurrencyRates();
+    
     qDebug() << "Таблицы успешно созданы";
     return true;
+}
+
+void FleetDatabase::initializeDefaultCurrencyRates()
+{
+    // Проверяем, есть ли уже курсы в базе
+    QSqlQuery checkQuery("SELECT COUNT(*) FROM currency_rates");
+    if (checkQuery.next() && checkQuery.value(0).toInt() > 0) {
+        // Курсы уже есть, загружаем их в память
+        loadCurrencyRates();
+        return;
+    }
+    
+    // Устанавливаем курсы по умолчанию
+    setCurrencyRate("USD", "RUB", 77.7586);
+    setCurrencyRate("RUB", "USD", 0.0129);
+    
+    qDebug() << "Курсы валют по умолчанию установлены";
 }
 
 void FleetDatabase::createSampleData()
@@ -107,65 +138,65 @@ void FleetDatabase::createSampleData()
     qDebug() << "Создание тестовых данных...";
     
     // Добавляем проекты
-    auto project1 = std::make_shared<Project>("ЖК «Солнечный»", QDate(2026, 1, 20));
-    auto project2 = std::make_shared<Project>("БЦ «Меридиан»", QDate(2025, 11, 1));
-    auto project3 = std::make_shared<Project>("Школа №15", QDate(2026, 1, 15));
+    const auto project1 = std::make_shared<Project>("ЖК «Солнечный»", QDate(2026, 1, 20));
+    const auto project2 = std::make_shared<Project>("БЦ «Меридиан»", QDate(2025, 11, 1));
+    const auto project3 = std::make_shared<Project>("Школа №15", QDate(2026, 1, 15));
     
     addProject(project1);
     addProject(project2);
     addProject(project3);
     
     // Добавляем технику
-    auto machine1 = std::make_shared<Machine>("Экскаватор CAT 320D", "Экскаватор", "CAT320D-2019-0847", 2019, 8500000);
+    const auto machine1 = std::make_shared<Machine>("Экскаватор CAT 320D", "Экскаватор", "CAT320D-2019-0847", 2019, Money(1000, Currency::USD));
     machine1->setStatus(MachineStatus::OnSite);
     machine1->setCurrentProject("ЖК «Солнечный»");
     machine1->setAssignedDate(QDate(2026, 1, 20));
     addMachine(machine1);
-    
-    auto machine2 = std::make_shared<Machine>("Бульдозер Komatsu D65", "Бульдозер", "KOM-D65-2020-1123", 2020, 12300000);
+
+    const auto machine2 = std::make_shared<Machine>("Бульдозер Komatsu D65", "Бульдозер", "KOM-D65-2020-1123", 2020, Money(12300000, Currency::RUB));
     machine2->setStatus(MachineStatus::Available);
     addMachine(machine2);
-    
-    auto machine3 = std::make_shared<Machine>("Кран башенный КБ-403", "Кран", "KB403-2018-0291", 2018, 15700000);
+
+    const auto machine3 = std::make_shared<Machine>("Кран башенный КБ-403", "Кран", "KB403-2018-0291", 2018, Money(15700000, Currency::RUB));
     machine3->setStatus(MachineStatus::OnSite);
     machine3->setCurrentProject("БЦ «Меридиан»");
     addMachine(machine3);
-    
-    auto machine4 = std::make_shared<Machine>("Автокран Liebherr LTM 1050", "Автокран", "LTM1050-2021-0055", 2021, 22100000);
+
+    const auto machine4 = std::make_shared<Machine>("Автокран Liebherr LTM 1050", "Автокран", "LTM1050-2021-0055", 2021, Money(22100000, Currency::RUB));
     machine4->setStatus(MachineStatus::InRepair);
     addMachine(machine4);
-    
-    auto machine5 = std::make_shared<Machine>("Погрузчик JCB 531-70", "Погрузчик", "JCB531-2019-0782", 2019, 4200000);
+
+    const auto machine5 = std::make_shared<Machine>("Погрузчик JCB 531-70", "Погрузчик", "JCB531-2019-0782", 2019, Money(4200000, Currency::RUB));
     machine5->setStatus(MachineStatus::Available);
     addMachine(machine5);
-    
-    auto machine6 = std::make_shared<Machine>("Экскаватор-погрузчик JCB 3CX", "Экскаватор-погрузчик", "JCB3CX-2020-0394", 2020, 5800000);
+
+    const auto machine6 = std::make_shared<Machine>("Экскаватор-погрузчик JCB 3CX", "Экскаватор-погрузчик", "JCB3CX-2020-0394", 2020, Money(5800000, Currency::RUB));
     machine6->setStatus(MachineStatus::OnSite);
     machine6->setCurrentProject("ЖК «Солнечный»");
     addMachine(machine6);
-    
-    auto machine7 = std::make_shared<Machine>("Самосвал КАМАЗ-6520", "Самосвал", "KMZ6520-2017-1847", 2017, 3900000);
+
+    const auto machine7 = std::make_shared<Machine>("Самосвал КАМАЗ-6520", "Самосвал", "KMZ6520-2017-1847", 2017, Money(3900000, Currency::RUB));
     machine7->setStatus(MachineStatus::Available);
     addMachine(machine7);
-    
-    auto machine8 = std::make_shared<Machine>("Бетономешалка MAN TGS", "Бетономешалка", "MAN-TGS-2019-0621", 2019, 7200000);
+
+    const auto machine8 = std::make_shared<Machine>("Бетономешалка MAN TGS", "Бетономешалка", "MAN-TGS-2019-0621", 2019, Money(7200000, Currency::RUB));
     machine8->setStatus(MachineStatus::OnSite);
     machine8->setCurrentProject("Школа №15");
     addMachine(machine8);
-    
-    auto machine9 = std::make_shared<Machine>("Каток BOMAG BW 213", "Каток", "BOMAG213-2018-0183", 2018, 6100000);
+
+    const auto machine9 = std::make_shared<Machine>("Каток BOMAG BW 213", "Каток", "BOMAG213-2018-0183", 2018, Money(6100000, Currency::RUB));
     machine9->setStatus(MachineStatus::InRepair);
     addMachine(machine9);
-    
-    auto machine10 = std::make_shared<Machine>("Грейдер ДЗ-98", "Грейдер", "DZ98-2016-0095", 2016, 2800000);
+
+    const auto machine10 = std::make_shared<Machine>("Грейдер ДЗ-98", "Грейдер", "DZ98-2016-0095", 2016, Money(2800000, Currency::RUB));
     machine10->setStatus(MachineStatus::Decommissioned);
     addMachine(machine10);
-    
-    auto machine11 = std::make_shared<Machine>("Виброплита Wacker Neuson", "Виброплита", "WN-VP-2022-0012", 2022, 320000);
+
+    const auto machine11 = std::make_shared<Machine>("Виброплита Wacker Neuson", "Виброплита", "WN-VP-2022-0012", 2022, Money(320000, Currency::RUB));
     machine11->setStatus(MachineStatus::Available);
     addMachine(machine11);
-    
-    auto machine12 = std::make_shared<Machine>("Компрессор Atlas Copco", "Компрессор", "AC-XAS-2021-0487", 2021, 890000);
+
+    const auto machine12 = std::make_shared<Machine>("Компрессор Atlas Copco", "Компрессор", "AC-XAS-2021-0487", 2021, Money(890000, Currency::RUB));
     machine12->setStatus(MachineStatus::OnSite);
     machine12->setCurrentProject("БЦ «Меридиан»");
     addMachine(machine12);
@@ -175,12 +206,12 @@ void FleetDatabase::createSampleData()
 
 // ===== ОПЕРАЦИИ С ТЕХНИКОЙ =====
 
-bool FleetDatabase::addMachine(MachinePtr machine)
+bool FleetDatabase::addMachine(const MachinePtr& machine)
 {
     QSqlQuery query;
     query.prepare(R"(
-        INSERT INTO machines (name, type, serial_number, year_of_manufacture, status, cost, current_project, assigned_date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO machines (name, type, serial_number, year_of_manufacture, status, cost, currency, current_project, assigned_date)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     )");
     
     query.addBindValue(machine->getName());
@@ -188,7 +219,8 @@ bool FleetDatabase::addMachine(MachinePtr machine)
     query.addBindValue(machine->getSerialNumber());
     query.addBindValue(machine->getYearOfManufacture());
     query.addBindValue(Machine::statusToString(machine->getStatus()));
-    query.addBindValue(machine->getCost());
+    query.addBindValue(machine->getCost().getAmount());
+    query.addBindValue(Money::getCurrencyName(machine->getCost().getCurrency()));
     query.addBindValue(machine->getCurrentProject());
     query.addBindValue(machine->getAssignedDate().isValid() ? machine->getAssignedDate().toString(Qt::ISODate) : QVariant());
     
@@ -205,9 +237,9 @@ bool FleetDatabase::updateMachine(MachinePtr machine)
 {
     QSqlQuery query;
     query.prepare(R"(
-        UPDATE machines 
-        SET name = ?, type = ?, serial_number = ?, year_of_manufacture = ?, 
-            status = ?, cost = ?, current_project = ?, assigned_date = ?
+        UPDATE machines
+        SET name = ?, type = ?, serial_number = ?, year_of_manufacture = ?,
+            status = ?, cost = ?, currency = ?, current_project = ?, assigned_date = ?
         WHERE id = ?
     )");
     
@@ -216,7 +248,8 @@ bool FleetDatabase::updateMachine(MachinePtr machine)
     query.addBindValue(machine->getSerialNumber());
     query.addBindValue(machine->getYearOfManufacture());
     query.addBindValue(Machine::statusToString(machine->getStatus()));
-    query.addBindValue(machine->getCost());
+    query.addBindValue(machine->getCost().getAmount());
+    query.addBindValue(Money::getCurrencyName(machine->getCost().getCurrency()));
     query.addBindValue(machine->getCurrentProject());
     query.addBindValue(machine->getAssignedDate().isValid() ? machine->getAssignedDate().toString(Qt::ISODate) : QVariant());
     query.addBindValue(machine->getId());
@@ -256,7 +289,13 @@ QVector<MachinePtr> FleetDatabase::getAllMachines()
         machine->setSerialNumber(query.value("serial_number").toString());
         machine->setYearOfManufacture(query.value("year_of_manufacture").toInt());
         machine->setStatus(Machine::stringToStatus(query.value("status").toString()));
-        machine->setCost(query.value("cost").toDouble());
+        
+        // Загружаем стоимость с валютой
+        double amount = query.value("cost").toDouble();
+        QString currencyStr = query.value("currency").toString();
+        Currency currency = Money::currencyFromString(currencyStr);
+        machine->setCost(Money(amount, currency));
+        
         machine->setCurrentProject(query.value("current_project").toString());
         
         QString dateStr = query.value("assigned_date").toString();
@@ -287,10 +326,16 @@ MachinePtr FleetDatabase::getMachineById(int machineId)
     machine->setSerialNumber(query.value("serial_number").toString());
     machine->setYearOfManufacture(query.value("year_of_manufacture").toInt());
     machine->setStatus(Machine::stringToStatus(query.value("status").toString()));
-    machine->setCost(query.value("cost").toDouble());
-    machine->setCurrentProject(query.value("current_project").toString());
     
-    QString dateStr = query.value("assigned_date").toString();
+    // Загружаем стоимость с валютой
+    double amount = query.value("cost").toDouble();
+    QString currencyStr = query.value("currency").toString();
+    Currency currency = Money::currencyFromString(currencyStr);
+    machine->setCost(Money(amount, currency));
+    
+    machine->setCurrentProject(query.value("current_project").toString());
+
+    const QString dateStr = query.value("assigned_date").toString();
     if (!dateStr.isEmpty()) {
         machine->setAssignedDate(QDate::fromString(dateStr, Qt::ISODate));
     }
@@ -317,7 +362,13 @@ QVector<MachinePtr> FleetDatabase::getMachinesByStatus(MachineStatus status)
         machine->setSerialNumber(query.value("serial_number").toString());
         machine->setYearOfManufacture(query.value("year_of_manufacture").toInt());
         machine->setStatus(Machine::stringToStatus(query.value("status").toString()));
-        machine->setCost(query.value("cost").toDouble());
+        
+        // Загружаем стоимость с валютой
+        double amount = query.value("cost").toDouble();
+        QString currencyStr = query.value("currency").toString();
+        Currency currency = Money::currencyFromString(currencyStr);
+        machine->setCost(Money(amount, currency));
+        
         machine->setCurrentProject(query.value("current_project").toString());
         
         QString dateStr = query.value("assigned_date").toString();
@@ -429,8 +480,8 @@ ProjectPtr FleetDatabase::getProjectById(int projectId)
     project->setId(query.value("id").toInt());
     project->setName(query.value("name").toString());
     project->setStartDate(QDate::fromString(query.value("start_date").toString(), Qt::ISODate));
-    
-    QString endDateStr = query.value("end_date").toString();
+
+    const QString endDateStr = query.value("end_date").toString();
     if (!endDateStr.isEmpty()) {
         project->setEndDate(QDate::fromString(endDateStr, Qt::ISODate));
     }
@@ -448,7 +499,7 @@ FleetDatabase::Statistics FleetDatabase::getStatistics()
     QSqlQuery query("SELECT status, COUNT(*) as count FROM machines GROUP BY status");
     while (query.next()) {
         QString status = query.value("status").toString();
-        int count = query.value("count").toInt();
+        const int count = query.value("count").toInt();
         
         if (status == "Свободна") stats.available = count;
         else if (status == "На объекте") stats.onSite = count;
@@ -458,4 +509,64 @@ FleetDatabase::Statistics FleetDatabase::getStatistics()
     
     stats.total = stats.available + stats.onSite + stats.inRepair + stats.decommissioned;
     return stats;
+}
+
+// ===== УПРАВЛЕНИЕ КУРСАМИ ВАЛЮТ =====
+
+bool FleetDatabase::setCurrencyRate(const QString& fromCurrency, const QString& toCurrency, double rate)
+{
+    QSqlQuery query;
+    query.prepare(R"(
+        INSERT OR REPLACE INTO currency_rates (from_currency, to_currency, rate)
+        VALUES (?, ?, ?)
+    )");
+    
+    query.addBindValue(fromCurrency);
+    query.addBindValue(toCurrency);
+    query.addBindValue(rate);
+    
+    if (!query.exec()) {
+        qWarning() << "Ошибка сохранения курса валют:" << query.lastError().text();
+        return false;
+    }
+    
+    qDebug() << "Курс валют сохранен:" << fromCurrency << "→" << toCurrency << "=" << rate;
+    return true;
+}
+
+double FleetDatabase::getCurrencyRate(const QString& fromCurrency, const QString& toCurrency)
+{
+    QSqlQuery query;
+    query.prepare("SELECT rate FROM currency_rates WHERE from_currency = ? AND to_currency = ?");
+    query.addBindValue(fromCurrency);
+    query.addBindValue(toCurrency);
+    
+    if (query.exec() && query.next()) {
+        return query.value("rate").toDouble();
+    }
+    
+    return 1.0; // По умолчанию
+}
+
+void FleetDatabase::loadCurrencyRates()
+{
+    // Методы Money::getExchangeRate() теперь автоматически получают курсы из БД
+    qDebug() << "Курсы валют готовы к использованию из БД";
+}
+
+QMap<QString, double> FleetDatabase::getAllCurrencyRates()
+{
+    QMap<QString, double> rates;
+    QSqlQuery query("SELECT from_currency, to_currency, rate FROM currency_rates");
+    
+    while (query.next()) {
+        QString from = query.value("from_currency").toString();
+        QString to = query.value("to_currency").toString();
+        double rate = query.value("rate").toDouble();
+        
+        QString key = from + "_" + to;
+        rates[key] = rate;
+    }
+    
+    return rates;
 }

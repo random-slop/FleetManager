@@ -22,7 +22,7 @@ public:
      * @param parent Родительский виджет
      * @param machine Машина для редактирования (nullptr для создания новой)
      */
-    explicit MachineDialog(QWidget *parent = nullptr, MachinePtr machine = nullptr);
+    explicit MachineDialog(QWidget *parent = nullptr, const MachinePtr& machine = nullptr);
     
     /**
      * @brief Деструктор
@@ -65,6 +65,20 @@ private:
      * @return true если уникален, иначе false
      */
     bool isSerialNumberUnique(const QString& serialNumber);
+    
+    /**
+     * @brief Преобразовать индекс валюты из comboBox в Currency enum
+     * @param index Индекс в comboBox
+     * @return Значение Currency
+     */
+    Currency indexToCurrency(int index) const;
+    
+    /**
+     * @brief Преобразовать Currency enum в индекс для comboBox
+     * @param currency Валюта
+     * @return Индекс в comboBox
+     */
+    int currencyToIndex(Currency currency) const;
     
     Ui::MachineDialog *ui;
     MachinePtr m_machine;           // Редактируемая машина (nullptr для новой)

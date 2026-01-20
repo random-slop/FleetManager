@@ -4,7 +4,7 @@
 #include <QMessageBox>
 #include <QDate>
 
-MachineDialog::MachineDialog(QWidget *parent, MachinePtr machine)
+MachineDialog::MachineDialog(QWidget *parent, const MachinePtr& machine)
     : QDialog(parent)
     , ui(new Ui::MachineDialog)
     , m_machine(machine)
@@ -86,7 +86,8 @@ void MachineDialog::fillFromMachine(MachinePtr machine)
     ui->comboType->setCurrentText(machine->getType());
     ui->editSerialNumber->setText(machine->getSerialNumber());
     ui->spinYear->setValue(machine->getYearOfManufacture());
-    ui->spinCost->setValue(static_cast<int>(machine->getCost())); // Округление до целых рублей
+    ui->spinCost->setValue(static_cast<int>(machine->getCost().getAmount()));
+    ui->comboCurrency->setCurrentIndex(currencyToIndex(machine->getCost().getCurrency()));
     ui->comboStatus->setCurrentText(Machine::statusToString(machine->getStatus()));
 }
 
@@ -112,7 +113,7 @@ bool MachineDialog::validate()
     }
     
     // Проверка уникальности серийного номера
-    QString serialNumber = ui->editSerialNumber->text().trimmed();
+    const QString serialNumber = ui->editSerialNumber->text().trimmed();
     if (!m_isEditMode || serialNumber != m_machine->getSerialNumber()) {
         if (!isSerialNumberUnique(serialNumber)) {
             QMessageBox::warning(this, "Ошибка валидации",
@@ -126,7 +127,7 @@ bool MachineDialog::validate()
     }
     
     // Проверка года выпуска
-    int currentYear = QDate::currentDate().year();
+    const int currentYear = QDate::currentDate().year();
     if (ui->spinYear->value() > currentYear + 1) {
         QMessageBox::warning(this, "Ошибка валидации",
                            QString("Год выпуска не может быть больше %1").arg(currentYear + 1));
@@ -183,8 +184,29 @@ MachinePtr MachineDialog::getMachine() const
     machine->setType(ui->comboType->currentText().trimmed());
     machine->setSerialNumber(ui->editSerialNumber->text().trimmed());
     machine->setYearOfManufacture(ui->spinYear->value());
-    machine->setCost(static_cast<double>(ui->spinCost->value())); // Преобразуем int в double
+
+    const Currency currency = indexToCurrency(ui->comboCurrency->currentIndex());
+    machine->setCost(Money(ui->spinCost->value(), currency));
+    
     machine->setStatus(Machine::stringToStatus(ui->comboStatus->currentText()));
     
     return machine;
+}
+
+Currency MachineDialog::indexToCurrency(const int index) const
+{
+    switch (index) {
+        case 0: return Currency::RUB;
+        case 1: return Currency::USD;
+        default: return Currency::RUB;
+    }
+}
+
+int MachineDialog::currencyToIndex(const Currency currency) const
+{
+    switch (currency) {
+        case Currency::RUB: return 0;
+        case Currency::USD: return 1;
+        default: return 0;
+    }
 }

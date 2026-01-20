@@ -40,7 +40,7 @@ public:
      * @param machine Указатель на объект Machine
      * @return true если добавление успешно, иначе false
      */
-    bool addMachine(MachinePtr machine);
+    bool addMachine(const MachinePtr& machine);
     
     /**
      * @brief Обновить существующую запись о технике
@@ -127,6 +127,36 @@ public:
     };
     
     Statistics getStatistics();
+    
+    // ===== УПРАВЛЕНИЕ КУРСАМИ ВАЛЮТ =====
+    
+    /**
+     * @brief Установить курс обмена валюты
+     * @param fromCurrency Исходная валюта (строка, например "USD")
+     * @param toCurrency Целевая валюта (строка, например "RUB")
+     * @param rate Курс обмена
+     * @return true если сохранение успешно, иначе false
+     */
+    bool setCurrencyRate(const QString& fromCurrency, const QString& toCurrency, double rate);
+    
+    /**
+     * @brief Получить курс обмена валюты
+     * @param fromCurrency Исходная валюта
+     * @param toCurrency Целевая валюта
+     * @return Курс обмена
+     */
+    double getCurrencyRate(const QString& fromCurrency, const QString& toCurrency);
+    
+    /**
+     * @brief Загрузить все курсы валют из БД в память
+     */
+    void loadCurrencyRates();
+    
+    /**
+     * @brief Получить все курсы валют
+     * @return Map с ключами вида "USD_RUB" и значениями курса
+     */
+    QMap<QString, double> getAllCurrencyRates();
 
 private:
     FleetDatabase(); // Приватный конструктор для singleton
@@ -145,6 +175,11 @@ private:
      * @brief Создать тестовые данные (для демонстрации)
      */
     void createSampleData();
+    
+    /**
+     * @brief Инициализировать курсы валют по умолчанию
+     */
+    void initializeDefaultCurrencyRates();
     
     QSqlDatabase m_database;
     bool m_initialized;

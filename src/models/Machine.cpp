@@ -4,7 +4,7 @@ Machine::Machine()
     : m_id(-1)
     , m_yearOfManufacture(2020)
     , m_status(MachineStatus::Available)
-    , m_cost(0.0)
+    , m_cost(0.0, Currency::RUB)
 {
 }
 
@@ -12,7 +12,7 @@ Machine::Machine(const QString& name,
                  const QString& type,
                  const QString& serialNumber,
                  int yearOfManufacture,
-                 double cost)
+                 const Money& cost)
     : m_id(-1)
     , m_name(name)
     , m_type(type)

@@ -8,9 +8,7 @@
  */
 enum class Currency {
     RUB, // Российский рубль
-    USD, // Доллар США
-    EUR, // Евро
-    CNY  // Китайский юань
+    USD  // Доллар США
 };
 
 /**
@@ -82,25 +80,12 @@ public:
     static Currency currencyFromString(const QString& name);
     
     /**
-     * @brief Установить курс обмена
-     * @param from Исходная валюта
-     * @param to Целевая валюта
-     * @param rate Курс обмена
-     */
-    static void setExchangeRate(Currency from, Currency to, double rate);
-    
-    /**
-     * @brief Получить курс обмена
+     * @brief Получить курс обмена из БД
      * @param from Исходная валюта
      * @param to Целевая валюта
      * @return Курс обмена
      */
     static double getExchangeRate(Currency from, Currency to);
-    
-    /**
-     * @brief Инициализировать курсы валют по умолчанию
-     */
-    static void initializeExchangeRates();
     
     // Операторы сравнения (сравнивают суммы в рублях)
     bool operator<(const Money& other) const;
@@ -110,7 +95,4 @@ public:
 private:
     double m_amount;
     Currency m_currency;
-    
-    // Курсы обмена (хранятся как статические)
-    static QMap<QPair<Currency, Currency>, double> s_exchangeRates;
 };
