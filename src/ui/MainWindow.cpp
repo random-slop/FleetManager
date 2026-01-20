@@ -36,9 +36,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     
-    // Disable right-click context menu on toolbar
-    ui->toolBar->setContextMenuPolicy(Qt::NoContextMenu);
-    
     setupUI();
     connectSignals();
     
@@ -57,12 +54,10 @@ MainWindow::~MainWindow()
 void MainWindow::setupUI()
 {
     // Disable context menu on all toolbar buttons
-    for (QObject *obj : ui->toolBar->children()) {
-        if (QWidget *widget = qobject_cast<QWidget*>(obj)) {
+    for (QObject *obj : ui->toolBar->children())
+        if (const auto widget = qobject_cast<QWidget*>(obj))
             widget->setContextMenuPolicy(Qt::NoContextMenu);
-        }
-    }
-    
+
     setupSidebar();
     
     // Создаем StackedWidget для переключения между таблицами
@@ -125,7 +120,7 @@ void MainWindow::setupSidebar()
     sidebarLayout->addWidget(navTitle);
     
     // Кнопки навигации
-    m_btnFleet = new QPushButton("📋 Парк техники");
+    m_btnFleet = new QPushButton("Парк техники");
     m_btnFleet->setStyleSheet(R"(
         QPushButton {
             text-align: left;
@@ -141,7 +136,7 @@ void MainWindow::setupSidebar()
     )");
     sidebarLayout->addWidget(m_btnFleet);
     
-    m_btnProjects = new QPushButton("🏗️ Проекты");
+    m_btnProjects = new QPushButton("Проекты");
     m_btnProjects->setStyleSheet(R"(
         QPushButton {
             text-align: left;
@@ -156,15 +151,7 @@ void MainWindow::setupSidebar()
     )");
     sidebarLayout->addWidget(m_btnProjects);
     
-    QPushButton *btnHistory = new QPushButton("📜 История");
-    btnHistory->setStyleSheet(m_btnProjects->styleSheet());
-    sidebarLayout->addWidget(btnHistory);
-    
-    QPushButton *btnReports = new QPushButton("📊 Отчёты");
-    btnReports->setStyleSheet(m_btnProjects->styleSheet());
-    sidebarLayout->addWidget(btnReports);
-    
-    QPushButton *btnSettings = new QPushButton("⚙️ Настройки");
+    QPushButton *btnSettings = new QPushButton("Настройки");
     btnSettings->setStyleSheet(m_btnProjects->styleSheet());
     sidebarLayout->addWidget(btnSettings);
     
