@@ -7,8 +7,7 @@ MachineTableModel::MachineTableModel(QObject *parent)
     : QAbstractTableModel(parent)
     , m_currentStatusFilter(-1) // -1 означает показать все
 {
-    m_headers << "Название" << "Тип" << "Серийный номер" 
-              << "Год выпуска" << "Статус" << "Стоимость" << "Текущий проект";
+    m_headers << "Название" << "Статус" << "Текущий проект";
 }
 
 int MachineTableModel::rowCount(const QModelIndex &parent) const
@@ -35,18 +34,14 @@ QVariant MachineTableModel::data(const QModelIndex &index, int role) const
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
             case 0: return machine->getName();
-            case 1: return machine->getType();
-            case 2: return machine->getSerialNumber();
-            case 3: return machine->getYearOfManufacture();
-            case 4: return Machine::statusToString(machine->getStatus());
-            case 5: return QString("%1 ₽").arg(machine->getCost(), 0, 'f', 0);
-            case 6: return machine->getCurrentProject().isEmpty() ? "—" : machine->getCurrentProject();
+            case 1: return Machine::statusToString(machine->getStatus());
+            case 2: return machine->getCurrentProject().isEmpty() ? "—" : machine->getCurrentProject();
             default: return QVariant();
         }
     }
     
     // Цветовое кодирование статуса
-    if (role == Qt::BackgroundRole && index.column() == 4) {
+    if (role == Qt::BackgroundRole && index.column() == 1) {
         switch (machine->getStatus()) {
             case MachineStatus::Available:
                 return QBrush(QColor(76, 175, 80, 50)); // Зелёный (свободна)
@@ -62,7 +57,7 @@ QVariant MachineTableModel::data(const QModelIndex &index, int role) const
     }
     
     // Цвет текста для статуса
-    if (role == Qt::ForegroundRole && index.column() == 4) {
+    if (role == Qt::ForegroundRole && index.column() == 1) {
         switch (machine->getStatus()) {
             case MachineStatus::Available:
                 return QBrush(QColor(76, 175, 80)); // Зелёный

@@ -1,6 +1,7 @@
 #include <QApplication>
 #include "ui/MainWindow.h"
 #include "database/FleetDatabase.h"
+#include "models/Money.h"
 #include <QDebug>
 
 int main(int argc, char* argv[])
@@ -9,6 +10,10 @@ int main(int argc, char* argv[])
     
     // Устанавливаем стиль приложения
     app.setStyle("Fusion");
+    
+    // Инициализация курсов валют
+    Money::initializeExchangeRates();
+    qDebug() << "Курсы валют инициализированы";
     
     // Инициализация базы данных
     if (!FleetDatabase::instance().initialize("fleet.db")) {

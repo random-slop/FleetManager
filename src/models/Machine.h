@@ -3,6 +3,7 @@
 #include <QString>
 #include <QDate>
 #include <memory>
+#include "Money.h"
 
 /**
  * @brief Статус техники в парке

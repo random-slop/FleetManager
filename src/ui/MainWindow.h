@@ -49,6 +49,9 @@ private slots:
     
     // Слот для фильтрации по статусу
     void onStatusFilterChanged(int index);
+    
+    // Слот для контекстного меню
+    void showContextMenu(const QPoint& pos);
 
 private:
     /**

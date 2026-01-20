@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MachineDialog</class>
+ <widget class="QDialog" name="MachineDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>450</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Добавить технику</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Информация о технике</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <property name="horizontalSpacing">
+       <number>10</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>12</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="labelName">
+        <property name="text">
+         <string>Название:*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="editName">
+        <property name="placeholderText">
+         <string>Например: Экскаватор CAT 320D</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelType">
+        <property name="text">
+         <string>Тип техники:*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="comboType">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>Экскаватор</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Кран</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Бульдозер</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Погрузчик</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Автокран</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Экскаватор-погрузчик</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Самосвал</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Бетономешалка</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Каток</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Грейдер</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Виброплита</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Компрессор</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelSerial">
+        <property name="text">
+         <string>Серийный номер:*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="editSerialNumber">
+        <property name="placeholderText">
+         <string>Например: CAT320D-2024-0001</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labelYear">
+        <property name="text">
+         <string>Год выпуска:*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="spinYear">
+        <property name="minimum">
+         <number>1990</number>
+        </property>
+        <property name="maximum">
+         <number>2030</number>
+        </property>
+        <property name="value">
+         <number>2024</number>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="labelCost">
+        <property name="text">
+         <string>Стоимость (₽):*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QSpinBox" name="spinCost">
+        <property name="suffix">
+         <string> ₽</string>
+        </property>
+        <property name="minimum">
+         <number>1000</number>
+        </property>
+        <property name="maximum">
+         <number>999999999</number>
+        </property>
+        <property name="singleStep">
+         <number>100000</number>
+        </property>
+        <property name="value">
+         <number>1000000</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="labelStatus">
+        <property name="text">
+         <string>Статус:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QComboBox" name="comboStatus">
+        <item>
+         <property name="text">
+          <string>Свободна</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>На объекте</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>В ремонте</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Списана</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelRequired">
+     <property name="text">
+      <string>* - обязательные поля</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #888888; font-size: 10px;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>MachineDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>354</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>MachineDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>360</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

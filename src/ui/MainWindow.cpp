@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "MachineTableModel.h"
+#include "MachineDialog.h"
 #include "../database/FleetDatabase.h"
 #include <QTableView>
 #include <QVBoxLayout>
@@ -11,6 +12,7 @@
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QMenu>
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -173,12 +175,20 @@ void MainWindow::setupTable()
     )");
     
     // Устанавливаем ширину колонок
-    m_tableView->setColumnWidth(0, 200); // Название
-    m_tableView->setColumnWidth(1, 150); // Тип
-    m_tableView->setColumnWidth(2, 150); // Серийный номер
-    m_tableView->setColumnWidth(3, 100); // Год
-    m_tableView->setColumnWidth(4, 120); // Статус
-    m_tableView->setColumnWidth(5, 120); // Стоимость
+    m_tableView->setColumnWidth(0, 300); // Название
+    m_tableView->setColumnWidth(1, 150); // Статус
+    m_tableView->setColumnWidth(2, 200); // Текущий проект
+    
+    // Включаем сортировку по колонкам
+    m_tableView->setSortingEnabled(true);
+    
+    // Двойной клик для редактирования
+    connect(m_tableView, &QTableView::doubleClicked, this, &MainWindow::onEditMachine);
+    
+    // Контекстное меню (ПКМ)
+    m_tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_tableView, &QTableView::customContextMenuRequested,
+            this, &MainWindow::showContextMenu);
     
     // Добавляем таблицу в контейнер
     QVBoxLayout *tableLayout = new QVBoxLayout(ui->tableContainer);
@@ -269,8 +279,18 @@ void MainWindow::connectSignals()
 
 void MainWindow::onAddMachine()
 {
-    // TODO: Создать диалог добавления техники
-    QMessageBox::information(this, "Добавление", "Функция добавления техники будет реализована в следующей версии");
+    MachineDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+ auto machine = dialog.getMachine();
+        if (FleetDatabase::instance().addMachine(machine)) {
+            m_tableModel->loadData();
+            updateStatusBar();
+            QMessageBox::information(this, "Добавление",
+                                   QString("Техника \"%1\" успешно добавлена").arg(machine->getName()));
+        } else {
+            QMessageBox::critical(this, "Ошибка", "Не удалось добавить технику в базу данных");
+        }
+    }
 }
 
 void MainWindow::onEditMachine()
@@ -281,10 +301,19 @@ void MainWindow::onEditMachine()
         return;
     }
     
-    // TODO: Создать диалог редактирования
-    QMessageBox::information(this, "Редактирование", 
-                            QString("Редактирование: %1\nФункция будет реализована в следующей версии")
-                            .arg(machine->getName()));
+    MachineDialog dialog(this, machine);
+    if (dialog.exec() == QDialog::Accepted) {
+        auto updatedMachine = dialog.getMachine();
+        if (FleetDatabase::instance().updateMachine(updatedMachine)) {
+            m_tableModel->loadData();
+            updateStatusBar();
+            onTableSelectionChanged(); // Обновляем панель деталей
+            QMessageBox::information(this, "Редактирование",
+                                   QString("Техника \"%1\" успешно обновлена").arg(updatedMachine->getName()));
+        } else {
+            QMessageBox::critical(this, "Ошибка", "Не удалось обновить технику в базе данных");
+        }
+    }
 }
 
 void MainWindow::onDeleteMachine()
@@ -493,4 +522,21 @@ MachinePtr MainWindow::getSelectedMachine()
     
     int row = selection.first().row();
     return m_tableModel->getMachine(row);
+}
+
+void MainWindow::showContextMenu(const QPoint& pos)
+{
+    // Создаём контекстное меню
+    QMenu menu(this);
+    
+    // Добавляем действия
+    menu.addAction("Редактировать", this, &MainWindow::onEditMachine);
+    menu.addAction("Удалить", this, &MainWindow::onDeleteMachine);
+    menu.addSeparator();
+    menu.addAction("Назначить на проект", this, &MainWindow::onAssignToProject);
+    menu.addAction("Вернуть с проекта", this, &MainWindow::onReturnFromProject);
+    menu.addAction("Отправить в ремонт", this, &MainWindow::onSendToRepair);
+    
+    // Показываем меню в глобальных координатах
+    menu.exec(m_tableView->viewport()->mapToGlobal(pos));
 }
