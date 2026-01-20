@@ -132,7 +132,6 @@ QStatusBar {
    <addaction name="actionDelete"/>
    <addaction name="separator"/>
    <addaction name="actionAssignToProject"/>
-   <addaction name="actionReturnFromProject"/>
    <addaction name="separator"/>
    <addaction name="actionSendToRepair"/>
   </widget>

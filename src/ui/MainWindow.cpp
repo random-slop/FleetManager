@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_tableModel->loadData();
     m_projectTableModel->refresh();
     updateStatusBar();
+    updateToolbarButtonsState();
 }
 
 MainWindow::~MainWindow()
@@ -382,6 +383,10 @@ void MainWindow::connectSignals()
     connect(m_tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableSelectionChanged);
     connect(m_projectTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::onProjectSelectionChanged);
     
+    // Подключаем обновление состояния toolbar кнопок
+    connect(m_tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::updateToolbarButtonsState);
+    connect(m_projectTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::updateToolbarButtonsState);
+    
     // Подключаем фильтр по статусу
     connect(m_statusFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onStatusFilterChanged);
 }
@@ -410,6 +415,7 @@ void MainWindow::showFleetView()
         QPushButton:hover { background-color: #2a2d2e; }
     )");
     m_statusFilter->setEnabled(true);
+    updateToolbarButtonsState();
 }
 
 void MainWindow::showProjectsView()
@@ -427,6 +433,7 @@ void MainWindow::showProjectsView()
         QPushButton:hover { background-color: #2a2d2e; }
     )");
     m_statusFilter->setEnabled(false);
+    updateToolbarButtonsState();
 }
 
 void MainWindow::onAddMachine()
@@ -437,6 +444,7 @@ void MainWindow::onAddMachine()
         if (FleetDatabase::instance().addMachine(machine)) {
             m_tableModel->loadData();
             updateStatusBar();
+            updateToolbarButtonsState();
             QMessageBox::information(this, "Добавление",
                                    QString("Техника \"%1\" успешно добавлена").arg(machine->getName()));
         } else QMessageBox::critical(this, "Ошибка", "Не удалось добавить технику в базу данных");
@@ -458,6 +466,7 @@ void MainWindow::onEditMachine()
             m_tableModel->loadData();
             updateStatusBar();
             onTableSelectionChanged(); // Обновляем панель деталей
+            updateToolbarButtonsState();
             QMessageBox::information(this, "Редактирование",
                                    QString("Техника \"%1\" успешно обновлена").arg(updatedMachine->getName()));
         } else {
@@ -485,6 +494,7 @@ void MainWindow::onDeleteMachine()
             m_tableModel->loadData();
             updateStatusBar();
             updateDetailsPanel(nullptr);
+            updateToolbarButtonsState();
             QMessageBox::information(this, "Удаление", "Техника успешно удалена");
         } else {
             QMessageBox::critical(this, "Ошибка", "Не удалось удалить технику");
@@ -499,6 +509,7 @@ void MainWindow::onAddProject()
         const auto project = dialog.getProject();
         if (FleetDatabase::instance().addProject(project)) {
             m_projectTableModel->refresh();
+            updateToolbarButtonsState();
             QMessageBox::information(this, "Добавление",
                                    QString("Проект \"%1\" успешно добавлен").arg(project->getName()));
         } else QMessageBox::critical(this, "Ошибка", "Не удалось добавить проект");
@@ -518,6 +529,7 @@ void MainWindow::onEditProject()
         const auto updatedProject = dialog.getProject();
         if (FleetDatabase::instance().updateProject(updatedProject)) {
             m_projectTableModel->refresh();
+            updateToolbarButtonsState();
             QMessageBox::information(this, "Редактирование",
                                    QString("Проект \"%1\" успешно обновлен").arg(updatedProject->getName()));
         } else QMessageBox::critical(this, "Ошибка", "Не удалось обновить проект");
@@ -539,6 +551,7 @@ void MainWindow::onDeleteProject()
     if (reply == QMessageBox::Yes) {
         if (FleetDatabase::instance().deleteProject(project->getId())) {
             m_projectTableModel->refresh();
+            updateToolbarButtonsState();
             QMessageBox::information(this, "Удаление", "Проект успешно удален");
         } else QMessageBox::critical(this, "Ошибка", "Не удалось удалить проект");
     }
@@ -552,8 +565,28 @@ void MainWindow::onAssignToProject()
         return;
     }
     
+    // Если машина на объекте - вернуть с проекта
+    if (machine->getStatus() == MachineStatus::OnSite) {
+        machine->setStatus(MachineStatus::Available);
+        machine->setCurrentProject("");
+        machine->setAssignedDate(QDate());
+        
+        if (FleetDatabase::instance().updateMachine(machine)) {
+            m_tableModel->loadData();
+            updateStatusBar();
+            onTableSelectionChanged();
+            updateToolbarButtonsState();
+            QMessageBox::information(this, "Возврат с проекта",
+                                   QString("Техника \"%1\" возвращена в парк").arg(machine->getName()));
+        } else {
+            QMessageBox::critical(this, "Ошибка", "Не удалось обновить статус техники");
+        }
+        return;
+    }
+    
+    // Если машина свободна - назначить на проект
     if (machine->getStatus() != MachineStatus::Available) {
-        QMessageBox::warning(this, "Назначение на проект", 
+        QMessageBox::warning(this, "Назначение на проект",
                            "Можно назначать только свободную технику");
         return;
     }
@@ -574,6 +607,7 @@ void MainWindow::onAssignToProject()
             m_tableModel->loadData();
             updateStatusBar();
             onTableSelectionChanged();
+            updateToolbarButtonsState();
             QMessageBox::information(this, "Назначение на проект",
                                    QString("Техника \"%1\" назначена на проект \"%2\"")
                                    .arg(machine->getName(), project->getName()));
@@ -585,53 +619,47 @@ void MainWindow::onAssignToProject()
 
 void MainWindow::onReturnFromProject()
 {
-    const auto machine = getSelectedMachine();
-    if (!machine) {
-        QMessageBox::warning(this, "Возврат с проекта", "Выберите технику");
-        return;
-    }
-    
-    if (machine->getStatus() != MachineStatus::OnSite) {
-        QMessageBox::warning(this, "Возврат с проекта", 
-                           "Можно вернуть только технику, которая находится на объекте");
-        return;
-    }
-    
-    // Обновляем статус
-    machine->setStatus(MachineStatus::Available);
-    machine->setCurrentProject("");
-    machine->setAssignedDate(QDate());
-    
-    if (FleetDatabase::instance().updateMachine(machine)) {
-        m_tableModel->loadData();
-        updateStatusBar();
-        onTableSelectionChanged(); // Обновляем панель деталей
-        QMessageBox::information(this, "Возврат с проекта", 
-                               QString("Техника \"%1\" возвращена в парк").arg(machine->getName()));
-    } else QMessageBox::critical(this, "Ошибка", "Не удалось обновить статус техники");
+    // Эта функция больше не используется - функционал объединен с onAssignToProject()
+    // Вызываем onAssignToProject() для совместимости
+    onAssignToProject();
 }
 
 void MainWindow::onSendToRepair()
 {
     const auto machine = getSelectedMachine();
     if (!machine) {
-        QMessageBox::warning(this, "Отправка в ремонт", "Выберите технику");
-        return;
-    }
-    
-    if (machine->getStatus() == MachineStatus::InRepair) {
-        QMessageBox::information(this, "Отправка в ремонт", "Техника уже в ремонте");
+        QMessageBox::warning(this, "Операция с ремонтом", "Выберите технику");
         return;
     }
     
     if (machine->getStatus() == MachineStatus::Decommissioned) {
-        QMessageBox::warning(this, "Отправка в ремонт", "Списанную технику нельзя отправить в ремонт");
+        QMessageBox::warning(this, "Операция с ремонтом", "Списанную технику нельзя отправить в ремонт");
         return;
     }
     
-    // Обновляем статус
+    // Если машина в ремонте - вернуть из ремонта
+    if (machine->getStatus() == MachineStatus::InRepair) {
+        machine->setStatus(MachineStatus::Available);
+        
+        if (FleetDatabase::instance().updateMachine(machine)) {
+            m_tableModel->loadData();
+            updateStatusBar();
+            onTableSelectionChanged();
+            updateToolbarButtonsState();
+            QMessageBox::information(this, "Возврат из ремонта",
+                                   QString("Техника \"%1\" возвращена из ремонта").arg(machine->getName()));
+        } else {
+            QMessageBox::critical(this, "Ошибка", "Не удалось обновить статус техники");
+        }
+        return;
+    }
+    
+    // Отправить машину в ремонт
+    MachineStatus oldStatus = machine->getStatus();
     machine->setStatus(MachineStatus::InRepair);
-    if (machine->getStatus() == MachineStatus::OnSite) {
+    
+    // Если машина была на объекте - снять её с проекта
+    if (oldStatus == MachineStatus::OnSite) {
         machine->setCurrentProject("");
         machine->setAssignedDate(QDate());
     }
@@ -640,7 +668,8 @@ void MainWindow::onSendToRepair()
         m_tableModel->loadData();
         updateStatusBar();
         onTableSelectionChanged();
-        QMessageBox::information(this, "Отправка в ремонт", 
+        updateToolbarButtonsState();
+        QMessageBox::information(this, "Отправка в ремонт",
                                QString("Техника \"%1\" отправлена в ремонт").arg(machine->getName()));
     } else {
         QMessageBox::critical(this, "Ошибка", "Не удалось обновить статус техники");
@@ -736,7 +765,6 @@ void MainWindow::showContextMenu(const QPoint& pos)
     menu.addAction(ui->actionDelete);
     menu.addSeparator();
     menu.addAction(ui->actionAssignToProject);
-    menu.addAction(ui->actionReturnFromProject);
     menu.addSeparator();
     menu.addAction(ui->actionSendToRepair);
     
@@ -794,8 +822,78 @@ void MainWindow::updateStatusBar() const
 {
     const auto stats = FleetDatabase::instance().getStatistics();
     ui->statusbar->showMessage(QString("Всего: %1 | Свободно: %2 | На объектах: %3 | В ремонте: %4")
-                              .arg(stats.total)
-                              .arg(stats.available)
-                              .arg(stats.onSite)
-                              .arg(stats.inRepair));
+                               .arg(stats.total)
+                               .arg(stats.available)
+                               .arg(stats.onSite)
+                               .arg(stats.inRepair));
+}
+
+void MainWindow::updateToolbarButtonsState()
+{
+    bool isFleetView = (m_stackedWidget->currentIndex() == 0);
+    bool isProjectsView = (m_stackedWidget->currentIndex() == 1);
+    
+    if (isFleetView) {
+        const auto machine = getSelectedMachine();
+        bool hasMachineSelected = (machine != nullptr);
+        
+        // actionEdit, actionDelete доступны только если что-то выбрано
+        ui->actionEdit->setEnabled(hasMachineSelected);
+        ui->actionDelete->setEnabled(hasMachineSelected);
+        
+        // actionAssignToProject: техника выбрана И (свободна ИЛИ на объекте)
+        // Кнопка будет переключаться для назначения на проект или снятия с него
+        bool canToggleAssignment = hasMachineSelected &&
+                                  (machine->getStatus() == MachineStatus::Available ||
+                                   machine->getStatus() == MachineStatus::OnSite);
+        ui->actionAssignToProject->setEnabled(canToggleAssignment);
+        
+        // actionReturnFromProject больше не используется (объединена с actionAssignToProject)
+        ui->actionReturnFromProject->setEnabled(false);
+        
+        // actionSendToRepair: техника выбрана И не списана
+        // Кнопка будет переключаться для отправки в ремонт или возврата из ремонта
+        bool canToggleRepair = hasMachineSelected &&
+                              (machine->getStatus() != MachineStatus::Decommissioned);
+        ui->actionSendToRepair->setEnabled(canToggleRepair);
+    } else if (isProjectsView) {
+        const auto project = getSelectedProject();
+        bool hasProjectSelected = (project != nullptr);
+        
+        // actionEdit, actionDelete доступны только если что-то выбрано
+        ui->actionEdit->setEnabled(hasProjectSelected);
+        ui->actionDelete->setEnabled(hasProjectSelected);
+        
+        // Для проектов эти кнопки не используются
+        ui->actionAssignToProject->setEnabled(false);
+        ui->actionReturnFromProject->setEnabled(false);
+        ui->actionSendToRepair->setEnabled(false);
+    }
+    
+    updateActionTexts();
+}
+
+void MainWindow::updateActionTexts()
+{
+    if (m_stackedWidget->currentIndex() == 0) {
+        const auto machine = getSelectedMachine();
+        
+        // Обновляем текст кнопки назначения/снятия с проекта
+        if (machine && machine->getStatus() == MachineStatus::OnSite) {
+            ui->actionAssignToProject->setText("Вернуть с проекта");
+            ui->actionAssignToProject->setToolTip("Вернуть технику с проекта");
+        } else {
+            ui->actionAssignToProject->setText("Назначить на проект");
+            ui->actionAssignToProject->setToolTip("Назначить технику на проект");
+        }
+        
+        // Обновляем текст кнопки отправки в ремонт/возврата из ремонта
+        if (machine && machine->getStatus() == MachineStatus::InRepair) {
+            ui->actionSendToRepair->setText("Вернуть из ремонта");
+            ui->actionSendToRepair->setToolTip("Вернуть технику из ремонта");
+        } else {
+            ui->actionSendToRepair->setText("В ремонт");
+            ui->actionSendToRepair->setToolTip("Отправить технику в ремонт");
+        }
+    }
 }

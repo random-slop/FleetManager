@@ -113,6 +113,16 @@ private:
     void updateStatusBar() const;
     
     /**
+     * @brief Обновление состояния кнопок toolbar в зависимости от контекста
+     */
+    void updateToolbarButtonsState();
+    
+    /**
+     * @brief Обновление текста действий toolbar в зависимости от статуса машины
+     */
+    void updateActionTexts();
+    
+    /**
      * @brief Получить выбранную технику из таблицы
      * @return Указатель на выбранную технику или nullptr
      */
