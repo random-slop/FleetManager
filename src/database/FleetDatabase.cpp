@@ -380,6 +380,46 @@ QVector<MachinePtr> FleetDatabase::getMachinesByStatus(MachineStatus status)
     return machines;
 }
 
+QVector<MachinePtr> FleetDatabase::getMachinesByProject(const QString& projectName)
+{
+    QVector<MachinePtr> machines;
+    QSqlQuery query;
+    query.prepare("SELECT * FROM machines WHERE current_project = ? ORDER BY id");
+    query.addBindValue(projectName);
+    
+    if (!query.exec()) {
+        qWarning() << "Ошибка получения техники по проекту:" << query.lastError().text();
+        return machines;
+    }
+    
+    while (query.next()) {
+        auto machine = std::make_shared<Machine>();
+        machine->setId(query.value("id").toInt());
+        machine->setName(query.value("name").toString());
+        machine->setType(query.value("type").toString());
+        machine->setSerialNumber(query.value("serial_number").toString());
+        machine->setYearOfManufacture(query.value("year_of_manufacture").toInt());
+        machine->setStatus(Machine::stringToStatus(query.value("status").toString()));
+        
+        // Загружаем стоимость с валютой
+        double amount = query.value("cost").toDouble();
+        QString currencyStr = query.value("currency").toString();
+        Currency currency = Money::currencyFromString(currencyStr);
+        machine->setCost(Money(amount, currency));
+        
+        machine->setCurrentProject(query.value("current_project").toString());
+        
+        QString dateStr = query.value("assigned_date").toString();
+        if (!dateStr.isEmpty()) {
+            machine->setAssignedDate(QDate::fromString(dateStr, Qt::ISODate));
+        }
+        
+        machines.append(machine);
+    }
+    
+    return machines;
+}
+
 // ===== ОПЕРАЦИИ С ПРОЕКТАМИ =====
 
 bool FleetDatabase::addProject(ProjectPtr project)

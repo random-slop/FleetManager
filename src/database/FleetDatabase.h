@@ -76,6 +76,13 @@ public:
      */
     QVector<MachinePtr> getMachinesByStatus(MachineStatus status);
     
+    /**
+     * @brief Получить технику, назначенную на проект
+     * @param projectName Название проекта
+     * @return Вектор указателей на объекты Machine
+     */
+    QVector<MachinePtr> getMachinesByProject(const QString& projectName);
+    
     // ===== ОПЕРАЦИИ С ПРОЕКТАМИ =====
     
     /**

@@ -551,6 +551,19 @@ void MainWindow::onDeleteProject()
         return;
     }
     
+    // Проверяем, есть ли машины на этом проекте
+    auto machinesOnProject = FleetDatabase::instance().getMachinesByProject(project->getName());
+    
+    if (!machinesOnProject.isEmpty()) {
+        QMessageBox::warning(this, "Удаление невозможно",
+            QString("Невозможно удалить проект \"%1\".\n"
+                    "На проекте работают %2 единиц техники.\n"
+                    "Сначала верните всю технику с проекта.")
+            .arg(project->getName())
+            .arg(machinesOnProject.size()));
+        return;
+    }
+    
     const auto reply = QMessageBox::question(this, "Подтверждение",
                                       QString("Удалить проект \"%1\"?").arg(project->getName()),
                                       QMessageBox::Yes | QMessageBox::No);
