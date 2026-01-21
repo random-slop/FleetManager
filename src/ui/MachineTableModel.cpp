@@ -86,13 +86,13 @@ QVariant MachineTableModel::data(const QModelIndex &index, const int role) const
     if (role == Qt::BackgroundRole && actualColumn == 1)
         switch (machine->getStatus()) {
         case MachineStatus::Available:
-            return QBrush(QColor(76, 175, 80, 50)); // Зелёный (свободна)
+            return QBrush(QColor(76, 175, 80, 80)); // Зелёный (свободна)
         case MachineStatus::OnSite:
-            return QBrush(QColor(33, 150, 243, 50)); // Синий (на объекте)
+            return QBrush(QColor(33, 150, 243, 80)); // Синий (на объекте)
         case MachineStatus::InRepair:
-            return QBrush(QColor(255, 152, 0, 50)); // Оранжевый (в ремонте)
+            return QBrush(QColor(255, 152, 0, 80)); // Оранжевый (в ремонте)
         case MachineStatus::Decommissioned:
-            return QBrush(QColor(244, 67, 54, 50)); // Красный (списана)
+            return QBrush(QColor(244, 67, 54, 80)); // Красный (списана)
         default: return QVariant();
         }
 

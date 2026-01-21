@@ -142,9 +142,12 @@ void MainWindow::setupTable()
             background-color: #2d2d2d;
             color: #cccccc;
             padding: 6px;
-            border: none;
-            border-bottom: 1px solid #3e3e3e;
+            border: 1px solid #1a1a1a;
             font-weight: bold;
+        }
+        QTableView QTableCornerButton::section {
+            background-color: #2d2d2d;
+            border: none;
         }
     )");
     

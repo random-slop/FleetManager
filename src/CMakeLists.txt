@@ -14,7 +14,7 @@ find_package(Qt6 COMPONENTS
 	Sql
 	REQUIRED)
 
-add_executable(FleetManager
+add_executable(FleetManager WIN32
 	main.cpp
 	models/Machine.h
 	models/Machine.cpp
