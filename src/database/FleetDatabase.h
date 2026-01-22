@@ -24,9 +24,10 @@ public:
     /**
      * @brief Инициализация базы данных
      * @param dbPath Путь к файлу базы данных
+     * @param createSample Если true, будут созданы демонстрационные данные
      * @return true если инициализация успешна, иначе false
      */
-    bool initialize(const QString& dbPath = "fleet.db");
+    bool initialize(const QString& dbPath = "fleet.db", bool createSample = false);
     
     /**
      * @brief Закрыть соединение с базой данных

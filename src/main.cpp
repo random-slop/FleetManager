@@ -1,8 +1,11 @@
 #include <QApplication>
 #include "ui/MainWindow.h"
 #include "database/FleetDatabase.h"
+#include "ui/DatabaseSetupDialog.h"
 #include <QDebug>
 #include <QStyleFactory>
+#include <QFile>
+#include <QMessageBox>
 
 int main(int argc, char* argv[])
 {
@@ -55,9 +58,21 @@ int main(int argc, char* argv[])
         }
     )");
     
+    const QString dbPath = "fleet.db";
+    bool createSample = false;
+
+    if (!QFile::exists(dbPath)) {
+        DatabaseSetupDialog setupDialog;
+        if (setupDialog.exec() == QDialog::Accepted) {
+            if (setupDialog.getSetupResult() == DatabaseSetupDialog::CreateSampleData) {
+                createSample = true;
+            }
+        } else return 0; // Пользователь закрыл окно или нажал Отмена
+    }
+
     // Инициализация базы данных
-    if (!FleetDatabase::instance().initialize("fleet.db")) {
-        qCritical() << "Не удалось инициализировать базу данных!";
+    if (!FleetDatabase::instance().initialize(dbPath, createSample)) {
+        QMessageBox::critical(nullptr, "Ошибка", "Не удалось инициализировать базу данных!");
         return 1;
     }
     

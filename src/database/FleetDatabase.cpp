@@ -17,7 +17,7 @@ FleetDatabase::~FleetDatabase()
     close();
 }
 
-bool FleetDatabase::initialize(const QString& dbPath)
+bool FleetDatabase::initialize(const QString& dbPath, bool createSample)
 {
     if (m_initialized) return true;
 
@@ -34,10 +34,12 @@ bool FleetDatabase::initialize(const QString& dbPath)
         return false;
     }
     
-    // Создаём тестовые данные если база пустая
-    QSqlQuery query("SELECT COUNT(*) FROM machines");
-    if (query.next() && query.value(0).toInt() == 0)
-        createSampleData();
+    if (createSample) {
+        // Проверяем, пустая ли база, перед созданием демо-данных
+        QSqlQuery query("SELECT COUNT(*) FROM machines");
+        if (query.next() && query.value(0).toInt() == 0)
+            createSampleData();
+    }
 
     m_initialized = true;
     qDebug() << "База данных успешно инициализирована:" << dbPath;

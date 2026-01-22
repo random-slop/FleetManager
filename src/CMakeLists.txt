@@ -43,6 +43,8 @@ add_executable(FleetManager WIN32
 	ui/SettingsDialog.h
 	ui/SettingsDialog.cpp
 	ui/SettingsDialog.ui
+	ui/DatabaseSetupDialog.h
+	ui/DatabaseSetupDialog.cpp
 )
 
 target_link_libraries(FleetManager
