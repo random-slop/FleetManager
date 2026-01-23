@@ -173,51 +173,48 @@ void MachineTableModel::applyFilter()
 
 void MachineTableModel::sort(const int column, Qt::SortOrder order)
 {
-    // Получить реальный индекс столбца
     int actualColumn = getActualColumnIndex(column);
     if (actualColumn < 0 || actualColumn >= m_headers.size())
         return;
 
-    // Сохранить параметры сортировки
     m_sortColumn = actualColumn;
     m_sortOrder = order;
     
-    // Выполнить сортировку
     emit layoutAboutToBeChanged();
     
     std::ranges::sort(m_machines,
-                      [actualColumn, order](const MachinePtr& a, const MachinePtr& b) {
-                          bool result = false;
-                          switch (actualColumn) {
-                          case 0: // Название
-                              result = a->getName().toLower() < b->getName().toLower();
-                              break;
-                          case 1: // Статус
-                              result = static_cast<int>(a->getStatus()) < static_cast<int>(b->getStatus());
-                              break;
-                          case 2: // Текущий проект
-                              result = a->getCurrentProject().toLower() < b->getCurrentProject().toLower();
-                              break;
-                          case 3: // Тип техники
-                              result = a->getType().toLower() < b->getType().toLower();
-                              break;
-                          case 4: // Серийный номер
-                              result = a->getSerialNumber().toLower() < b->getSerialNumber().toLower();
-                              break;
-                          case 5: // Год выпуска
-                              result = a->getYearOfManufacture() < b->getYearOfManufacture();
-                              break;
-                          case 6: // Стоимость
-                              result = a->getCost().toRubles() < b->getCost().toRubles();
-                              break;
-                          case 7: // Назначен с
-                              result = a->getAssignedDate() < b->getAssignedDate();
-                              break;
-                          default:
-                              return false;
-                          }
-                          return order == Qt::AscendingOrder ? result : !result;
-                      });
+        [actualColumn, order](const MachinePtr& a, const MachinePtr& b) {
+            bool result = false;
+            switch (actualColumn) {
+            case 0: // Название
+                result = a->getName().toLower() < b->getName().toLower();
+                break;
+            case 1: // Статус
+                result = static_cast<int>(a->getStatus()) < static_cast<int>(b->getStatus());
+                break;
+            case 2: // Текущий проект
+                result = a->getCurrentProject().toLower() < b->getCurrentProject().toLower();
+                break;
+            case 3: // Тип техники
+                result = a->getType().toLower() < b->getType().toLower();
+                break;
+            case 4: // Серийный номер
+                result = a->getSerialNumber().toLower() < b->getSerialNumber().toLower();
+                break;
+            case 5: // Год выпуска
+                result = a->getYearOfManufacture() < b->getYearOfManufacture();
+                break;
+            case 6: // Стоимость
+                result = a->getCost().toRubles() < b->getCost().toRubles();
+                break;
+            case 7: // Назначен с
+                result = a->getAssignedDate() < b->getAssignedDate();
+                break;
+            default:
+                return false;
+            }
+            return order == Qt::AscendingOrder ? result : !result;
+        });
     
     emit layoutChanged();
 }

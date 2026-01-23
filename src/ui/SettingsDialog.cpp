@@ -71,11 +71,9 @@ void SettingsDialog::setupUI()
 
 void SettingsDialog::loadRates()
 {
-    // Load current rates from database
     m_usdToRubRate = FleetDatabase::instance().getCurrencyRate("USD", "RUB");
     m_rubToUsdRate = FleetDatabase::instance().getCurrencyRate("RUB", "USD");
     
-    // Set values in spinboxes
     ui->usdToRubSpinBox->setValue(m_usdToRubRate);
     ui->rubToUsdSpinBox->setValue(m_rubToUsdRate);
 }
@@ -90,7 +88,6 @@ bool SettingsDialog::validate()
         return false;
     }
     
-    // Optional: Check if rates are reciprocals (within reasonable tolerance)
     double expectedRubToUsd = 1.0 / usdRate;
     double tolerance = 0.001;
     
@@ -112,14 +109,11 @@ bool SettingsDialog::validate()
 
 void SettingsDialog::accept()
 {
-    if (!validate()) {
-        return;
-    }
+    if (!validate()) return;
     
     double usdToRub = ui->usdToRubSpinBox->value();
     double rubToUsd = ui->rubToUsdSpinBox->value();
     
-    // Save rates to database
     bool success = true;
     success = FleetDatabase::instance().setCurrencyRate("USD", "RUB", usdToRub) && success;
     success = FleetDatabase::instance().setCurrencyRate("RUB", "USD", rubToUsd) && success;

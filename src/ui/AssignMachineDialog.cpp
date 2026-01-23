@@ -43,7 +43,6 @@ void AssignMachineDialog::setupUI()
         QPushButton:hover { background-color: #1177bb; }
     )");
     
-    // Загружаем проекты из БД
     const auto projects = FleetDatabase::instance().getAllProjects();
     
     for (const auto& project : projects) {
@@ -52,9 +51,7 @@ void AssignMachineDialog::setupUI()
         ui->projectList->addItem(item);
     }
     
-    if (!projects.isEmpty()) {
-        ui->projectList->setCurrentRow(0);
-    }
+    if (!projects.isEmpty()) ui->projectList->setCurrentRow(0);
 }
 
 ProjectPtr AssignMachineDialog::getSelectedProject() const

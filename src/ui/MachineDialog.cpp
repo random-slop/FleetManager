@@ -93,7 +93,6 @@ void MachineDialog::fillFromMachine(MachinePtr machine)
 
 bool MachineDialog::validate()
 {
-    // Проверка обязательных полей
     if (ui->editName->text().trimmed().isEmpty()) {
         QMessageBox::warning(this, "Ошибка валидации", "Название техники не может быть пустым");
         ui->editName->setFocus();
@@ -112,7 +111,6 @@ bool MachineDialog::validate()
         return false;
     }
     
-    // Проверка уникальности серийного номера
     const QString serialNumber = ui->editSerialNumber->text().trimmed();
     if (!m_isEditMode || serialNumber != m_machine->getSerialNumber()) {
         if (!isSerialNumberUnique(serialNumber)) {
@@ -126,7 +124,7 @@ bool MachineDialog::validate()
         }
     }
     
-    // Проверка года выпуска
+
     const int currentYear = QDate::currentDate().year();
     if (ui->spinYear->value() < 1900 || ui->spinYear->value() > currentYear + 1) {
         QMessageBox::warning(this, "Ошибка валидации",
@@ -134,8 +132,7 @@ bool MachineDialog::validate()
         ui->spinYear->setFocus();
         return false;
     }
-    
-    // Проверка стоимости
+
     if (ui->spinCost->value() <= 0) {
         QMessageBox::warning(this, "Ошибка валидации", "Стоимость должна быть больше нуля");
         ui->spinCost->setFocus();
