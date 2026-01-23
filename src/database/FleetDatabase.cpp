@@ -154,57 +154,102 @@ void FleetDatabase::createSampleData()
     machine1->setStatus(MachineStatus::OnSite);
     machine1->setCurrentProject("ЖК «Солнечный»");
     machine1->setAssignedDate(QDate(2026, 1, 20));
-    machine1->setMileage(100);
-    machine1->setNextMaintenanceDate(QDate(2029, 1, 20));
-    machine1->setPurchaseDate(QDate(2021, 1, 19));
+    machine1->setMileage(4250);
+    machine1->setNextMaintenanceDate(QDate(2026, 3, 20));
+    machine1->setPurchaseDate(QDate(2019, 3, 15));
+    machine1->setWarrantyPeriod(24);
     addMachine(machine1);
 
     const auto machine2 = std::make_shared<Machine>("Бульдозер Komatsu D65", "Бульдозер", "KOM-D65-2020-1123", 2020, Money(12300000, Currency::RUB));
     machine2->setStatus(MachineStatus::Available);
+    machine2->setMileage(3100);
+    machine2->setNextMaintenanceDate(QDate(2026, 4, 10));
+    machine2->setPurchaseDate(QDate(2020, 5, 22));
+    machine2->setWarrantyPeriod(24);
     addMachine(machine2);
 
     const auto machine3 = std::make_shared<Machine>("Кран башенный КБ-403", "Кран", "KB403-2018-0291", 2018, Money(15700000, Currency::RUB));
     machine3->setStatus(MachineStatus::OnSite);
     machine3->setCurrentProject("БЦ «Меридиан»");
+    machine3->setMileage(1850);
+    machine3->setNextMaintenanceDate(QDate(2026, 2, 28));
+    machine3->setPurchaseDate(QDate(2018, 7, 10));
+    machine3->setWarrantyPeriod(36);
     addMachine(machine3);
 
     const auto machine4 = std::make_shared<Machine>("Автокран Liebherr LTM 1050", "Автокран", "LTM1050-2021-0055", 2021, Money(22100000, Currency::RUB));
     machine4->setStatus(MachineStatus::InRepair);
+    machine4->setMileage(5670);
+    machine4->setNextMaintenanceDate(QDate(2026, 1, 25));
+    machine4->setPurchaseDate(QDate(2021, 9, 12));
+    machine4->setWarrantyPeriod(24);
     addMachine(machine4);
 
     const auto machine5 = std::make_shared<Machine>("Погрузчик JCB 531-70", "Погрузчик", "JCB531-2019-0782", 2019, Money(4200000, Currency::RUB));
     machine5->setStatus(MachineStatus::Available);
+    machine5->setMileage(3420);
+    machine5->setNextMaintenanceDate(QDate(2026, 3, 15));
+    machine5->setPurchaseDate(QDate(2019, 11, 8));
+    machine5->setWarrantyPeriod(24);
     addMachine(machine5);
 
     const auto machine6 = std::make_shared<Machine>("Экскаватор-погрузчик JCB 3CX", "Экскаватор-погрузчик", "JCB3CX-2020-0394", 2020, Money(5800000, Currency::RUB));
     machine6->setStatus(MachineStatus::OnSite);
     machine6->setCurrentProject("ЖК «Солнечный»");
+    machine6->setMileage(2890);
+    machine6->setNextMaintenanceDate(QDate(2026, 4, 5));
+    machine6->setPurchaseDate(QDate(2020, 2, 18));
+    machine6->setWarrantyPeriod(24);
     addMachine(machine6);
 
     const auto machine7 = std::make_shared<Machine>("Самосвал КАМАЗ-6520", "Самосвал", "KMZ6520-2017-1847", 2017, Money(3900000, Currency::RUB));
     machine7->setStatus(MachineStatus::Available);
+    machine7->setMileage(45230);
+    machine7->setNextMaintenanceDate(QDate(2026, 2, 10));
+    machine7->setPurchaseDate(QDate(2017, 6, 20));
+    machine7->setWarrantyPeriod(36);
     addMachine(machine7);
 
     const auto machine8 = std::make_shared<Machine>("Бетономешалка MAN TGS", "Бетономешалка", "MAN-TGS-2019-0621", 2019, Money(7200000, Currency::RUB));
     machine8->setStatus(MachineStatus::OnSite);
     machine8->setCurrentProject("Школа №15");
+    machine8->setMileage(12450);
+    machine8->setNextMaintenanceDate(QDate(2026, 3, 30));
+    machine8->setPurchaseDate(QDate(2019, 8, 5));
+    machine8->setWarrantyPeriod(24);
     addMachine(machine8);
 
     const auto machine9 = std::make_shared<Machine>("Каток BOMAG BW 213", "Каток", "BOMAG213-2018-0183", 2018, Money(6100000, Currency::RUB));
     machine9->setStatus(MachineStatus::InRepair);
+    machine9->setMileage(3560);
+    machine9->setNextMaintenanceDate(QDate(2026, 1, 20));
+    machine9->setPurchaseDate(QDate(2018, 4, 12));
+    machine9->setWarrantyPeriod(24);
     addMachine(machine9);
 
     const auto machine10 = std::make_shared<Machine>("Грейдер ДЗ-98", "Грейдер", "DZ98-2016-0095", 2016, Money(2800000, Currency::RUB));
     machine10->setStatus(MachineStatus::Decommissioned);
+    machine10->setMileage(67890);
+    machine10->setNextMaintenanceDate(QDate(2025, 12, 15));
+    machine10->setPurchaseDate(QDate(2016, 9, 3));
+    machine10->setWarrantyPeriod(36);
     addMachine(machine10);
 
     const auto machine11 = std::make_shared<Machine>("Виброплита Wacker Neuson", "Виброплита", "WN-VP-2022-0012", 2022, Money(320000, Currency::RUB));
     machine11->setStatus(MachineStatus::Available);
+    machine11->setMileage(1200);
+    machine11->setNextMaintenanceDate(QDate(2026, 5, 15));
+    machine11->setPurchaseDate(QDate(2022, 1, 25));
+    machine11->setWarrantyPeriod(12);
     addMachine(machine11);
 
     const auto machine12 = std::make_shared<Machine>("Компрессор Atlas Copco", "Компрессор", "AC-XAS-2021-0487", 2021, Money(890000, Currency::RUB));
     machine12->setStatus(MachineStatus::OnSite);
     machine12->setCurrentProject("БЦ «Меридиан»");
+    machine12->setMileage(2340);
+    machine12->setNextMaintenanceDate(QDate(2026, 4, 20));
+    machine12->setPurchaseDate(QDate(2021, 6, 10));
+    machine12->setWarrantyPeriod(12);
     addMachine(machine12);
     
     qDebug() << "Тестовые данные созданы";

@@ -20,7 +20,7 @@ MachineTableModel::MachineTableModel(QObject *parent)
     m_columnVisibility[5] = false;  // Год выпуска
     m_columnVisibility[6] = false;  // Стоимость
     m_columnVisibility[7] = false;  // Назначен с
-    m_columnVisibility[8] = true;   // Пробег
+    m_columnVisibility[8] = false;   // Пробег
     m_columnVisibility[9] = false;  // Дата обслуживания
     m_columnVisibility[10] = false; // Дата покупки
     m_columnVisibility[11] = false; // Гарантия
