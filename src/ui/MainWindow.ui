@@ -556,6 +556,126 @@ QComboBox QAbstractItemView {
              </item>
             </layout>
            </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsMileageLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsMileageLabel">
+               <property name="text">
+                <string>ПРОБЕГ</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsMileage">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsNextMaintenanceLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsNextMaintenanceLabel">
+               <property name="text">
+                <string>ДАТА ОБСЛУЖИВАНИЯ</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsNextMaintenance">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsPurchaseDateLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsPurchaseDateLabel">
+               <property name="text">
+                <string>ДАТА ПОКУПКИ</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsPurchaseDate">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="detailsWarrantyPeriodLayout">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="detailsWarrantyPeriodLabel">
+               <property name="text">
+                <string>ГАРАНТИЙНЫЙ СРОК</string>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #858585; font-size: 10px;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="detailsWarrantyPeriod">
+               <property name="text">
+                <string>—</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #d4d4d4; font-size: 12px; font-weight: 500;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
           </layout>
          </widget>
         </item>

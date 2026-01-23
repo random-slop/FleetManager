@@ -89,6 +89,16 @@ void MachineDialog::fillFromMachine(MachinePtr machine)
     ui->spinCost->setValue(static_cast<int>(machine->getCost().getAmount()));
     ui->comboCurrency->setCurrentIndex(currencyToIndex(machine->getCost().getCurrency()));
     ui->comboStatus->setCurrentText(Machine::statusToString(machine->getStatus()));
+    
+    // Заполняем новые поля
+    ui->spinMileage->setValue(machine->getMileage());
+    if (machine->getNextMaintenanceDate().isValid()) {
+        ui->dateNextMaintenance->setDate(machine->getNextMaintenanceDate());
+    }
+    if (machine->getPurchaseDate().isValid()) {
+        ui->datePurchase->setDate(machine->getPurchaseDate());
+    }
+    ui->editWarrantyPeriod->setValue(machine->getWarrantyPeriod());
 }
 
 bool MachineDialog::validate()
@@ -186,6 +196,12 @@ MachinePtr MachineDialog::getMachine() const
     machine->setCost(Money(ui->spinCost->value(), currency));
     
     machine->setStatus(Machine::stringToStatus(ui->comboStatus->currentText()));
+    
+    // Устанавливаем новые поля
+    machine->setMileage(ui->spinMileage->value());
+    machine->setNextMaintenanceDate(ui->dateNextMaintenance->date());
+    machine->setPurchaseDate(ui->datePurchase->date());
+    machine->setWarrantyPeriod(ui->editWarrantyPeriod->value());
     
     return machine;
 }

@@ -157,6 +157,10 @@ private:
     QLabel *m_detailsCost;
     QLabel *m_detailsProject;
     QLabel *m_detailsAssignedDate;
+    QLabel *m_detailsMileage;
+    QLabel *m_detailsNextMaintenance;
+    QLabel *m_detailsPurchaseDate;
+    QLabel *m_detailsWarrantyPeriod;
     
     // Фильтр по статусу (теперь доступен через ui->statusFilter)
     // QComboBox *m_statusFilter;

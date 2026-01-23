@@ -5,10 +5,14 @@ Machine::Machine()
     , m_yearOfManufacture(2020)
     , m_status(MachineStatus::Available)
     , m_cost(0.0, Currency::RUB)
+    , m_mileage(0)
+    , m_nextMaintenanceDate(QDate(2026, 5, 1))
+    , m_purchaseDate(QDate(2022, 1, 1))
+    , m_warrantyPeriod(0)
 {
 }
 
-Machine::Machine(const QString& name, 
+Machine::Machine(const QString& name,
                  const QString& type,
                  const QString& serialNumber,
                  int yearOfManufacture,
@@ -20,6 +24,10 @@ Machine::Machine(const QString& name,
     , m_yearOfManufacture(yearOfManufacture)
     , m_status(MachineStatus::Available)
     , m_cost(cost)
+    , m_mileage(0)
+    , m_nextMaintenanceDate(QDate(2026, 5, 1))
+    , m_purchaseDate(QDate(2022, 1, 1))
+    , m_warrantyPeriod(0)
 {
 }
 

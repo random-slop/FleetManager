@@ -52,6 +52,10 @@ public:
     Money getCost() const { return m_cost; }
     QString getCurrentProject() const { return m_currentProject; }
     QDate getAssignedDate() const { return m_assignedDate; }
+    int getMileage() const { return m_mileage; }
+    QDate getNextMaintenanceDate() const { return m_nextMaintenanceDate; }
+    QDate getPurchaseDate() const { return m_purchaseDate; }
+    int getWarrantyPeriod() const { return m_warrantyPeriod; }
     
     // Сеттеры
     void setId(int id) { m_id = id; }
@@ -63,6 +67,10 @@ public:
     void setCost(const Money& cost) { m_cost = cost; }
     void setCurrentProject(const QString& project) { m_currentProject = project; }
     void setAssignedDate(const QDate& date) { m_assignedDate = date; }
+    void setMileage(int mileage) { m_mileage = mileage; }
+    void setNextMaintenanceDate(const QDate& date) { m_nextMaintenanceDate = date; }
+    void setPurchaseDate(const QDate& date) { m_purchaseDate = date; }
+    void setWarrantyPeriod(const int months) { m_warrantyPeriod = months; }
     
     /**
      * @brief Преобразует статус в строковое представление
@@ -88,6 +96,10 @@ private:
     Money m_cost;                       // Стоимость
     QString m_currentProject;            // Текущий проект (если назначена)
     QDate m_assignedDate;               // Дата назначения на проект
+    int m_mileage;                      // Пробег
+    QDate m_nextMaintenanceDate;        // Дата следующего обслуживания
+    QDate m_purchaseDate;               // Дата покупки
+    int m_warrantyPeriod;               // Гарантийный срок
 };
 
 using MachinePtr = std::shared_ptr<Machine>;

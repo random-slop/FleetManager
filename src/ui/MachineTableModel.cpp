@@ -9,17 +9,21 @@ MachineTableModel::MachineTableModel(QObject *parent)
     : QAbstractTableModel(parent)
     , m_currentStatusFilter(-1) // -1 означает показать все
 {
-    m_headers << "Название" << "Статус" << "Текущий проект" << "Тип техники" << "Серийный номер" << "Год выпуска" << "Стоимость" << "Назначен с";
+    m_headers << "Название" << "Статус" << "Текущий проект" << "Тип техники" << "Серийный номер" << "Год выпуска" << "Стоимость" << "Назначен с" << "Пробег" << "Дата обслуживания" << "Дата покупки" << "Гарантия";
 
     m_columnVisibility.resize(m_headers.size());
-    m_columnVisibility[0] = true;  // Название
-    m_columnVisibility[1] = true;  // Статус
-    m_columnVisibility[2] = true;  // Текущий проект
+    m_columnVisibility[0] = true;   // Название
+    m_columnVisibility[1] = true;   // Статус
+    m_columnVisibility[2] = true;   // Текущий проект
     m_columnVisibility[3] = false;  // Тип техники
-    m_columnVisibility[4] = false; // Серийный номер
-    m_columnVisibility[5] = false; // Год выпуска
-    m_columnVisibility[6] = false; // Стоимость
-    m_columnVisibility[7] = false; // Назначен с
+    m_columnVisibility[4] = false;  // Серийный номер
+    m_columnVisibility[5] = false;  // Год выпуска
+    m_columnVisibility[6] = false;  // Стоимость
+    m_columnVisibility[7] = false;  // Назначен с
+    m_columnVisibility[8] = true;   // Пробег
+    m_columnVisibility[9] = false;  // Дата обслуживания
+    m_columnVisibility[10] = false; // Дата покупки
+    m_columnVisibility[11] = false; // Гарантия
 }
 
 int MachineTableModel::rowCount(const QModelIndex &parent) const
@@ -79,6 +83,10 @@ QVariant MachineTableModel::data(const QModelIndex &index, const int role) const
                 return costText;
             }
             case 7: return machine->getAssignedDate().isValid() ? machine->getAssignedDate().toString("dd.MM.yyyy") : "—";
+            case 8: return QString::number(machine->getMileage()) + " км";
+            case 9: return machine->getNextMaintenanceDate().isValid() ? machine->getNextMaintenanceDate().toString("dd.MM.yyyy") : "—";
+            case 10: return machine->getPurchaseDate().isValid() ? machine->getPurchaseDate().toString("dd.MM.yyyy") : "—";
+            case 11: return QString("%1 месяцев").arg(machine->getWarrantyPeriod());
             default: return QVariant();
         }
     }

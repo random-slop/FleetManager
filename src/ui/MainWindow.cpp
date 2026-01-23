@@ -85,6 +85,10 @@ void MainWindow::setupUI()
     m_detailsCost = ui->detailsCost;
     m_detailsProject = ui->detailsProject;
     m_detailsAssignedDate = ui->detailsAssignedDate;
+    m_detailsMileage = ui->detailsMileage;
+    m_detailsNextMaintenance = ui->detailsNextMaintenance;
+    m_detailsPurchaseDate = ui->detailsPurchaseDate;
+    m_detailsWarrantyPeriod = ui->detailsWarrantyPeriod;
     fleetSplitter->addWidget(m_detailsPanel);
     
     fleetLayout->addWidget(fleetSplitter);
@@ -610,6 +614,10 @@ void MainWindow::updateDetailsPanel(const MachinePtr& machine) const
         m_detailsCost->setText("—");
         m_detailsProject->setText("—");
         m_detailsAssignedDate->setText("—");
+        m_detailsMileage->setText("—");
+        m_detailsNextMaintenance->setText("—");
+        m_detailsPurchaseDate->setText("—");
+        m_detailsWarrantyPeriod->setText("—");
         return;
     }
     
@@ -645,6 +653,12 @@ void MainWindow::updateDetailsPanel(const MachinePtr& machine) const
     
     m_detailsProject->setText(machine->getCurrentProject().isEmpty() ? "—" : machine->getCurrentProject());
     m_detailsAssignedDate->setText(machine->getAssignedDate().isValid() ? machine->getAssignedDate().toString("dd.MM.yyyy") : "—");
+    
+    // Новые поля
+    m_detailsMileage->setText(QString::number(machine->getMileage()) + " км");
+    m_detailsNextMaintenance->setText(machine->getNextMaintenanceDate().isValid() ? machine->getNextMaintenanceDate().toString("dd.MM.yyyy") : "—");
+    m_detailsPurchaseDate->setText(machine->getPurchaseDate().isValid() ? machine->getPurchaseDate().toString("dd.MM.yyyy") : "—");
+    m_detailsWarrantyPeriod->setText(QString("%1 месяцев").arg(machine->getWarrantyPeriod()));
 }
 
 MachinePtr MainWindow::getSelectedMachine() const

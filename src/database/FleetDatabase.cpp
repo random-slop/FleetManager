@@ -70,7 +70,11 @@ bool FleetDatabase::createTables()
             cost REAL NOT NULL,
             currency TEXT NOT NULL DEFAULT 'RUB',
             current_project TEXT,
-            assigned_date TEXT
+            assigned_date TEXT,
+            mileage INTEGER DEFAULT 0,
+            next_maintenance_date TEXT,
+            purchase_date TEXT,
+            warranty_period INTEGER DEFAULT 12
         )
     )";
     
@@ -150,6 +154,9 @@ void FleetDatabase::createSampleData()
     machine1->setStatus(MachineStatus::OnSite);
     machine1->setCurrentProject("ЖК «Солнечный»");
     machine1->setAssignedDate(QDate(2026, 1, 20));
+    machine1->setMileage(100);
+    machine1->setNextMaintenanceDate(QDate(2029, 1, 20));
+    machine1->setPurchaseDate(QDate(2021, 1, 19));
     addMachine(machine1);
 
     const auto machine2 = std::make_shared<Machine>("Бульдозер Komatsu D65", "Бульдозер", "KOM-D65-2020-1123", 2020, Money(12300000, Currency::RUB));
@@ -209,8 +216,8 @@ bool FleetDatabase::addMachine(const MachinePtr& machine)
 {
     QSqlQuery query;
     query.prepare(R"(
-        INSERT INTO machines (name, type, serial_number, year_of_manufacture, status, cost, currency, current_project, assigned_date)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO machines (name, type, serial_number, year_of_manufacture, status, cost, currency, current_project, assigned_date, mileage, next_maintenance_date, purchase_date, warranty_period)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     )");
     
     query.addBindValue(machine->getName());
@@ -222,6 +229,10 @@ bool FleetDatabase::addMachine(const MachinePtr& machine)
     query.addBindValue(Money::getCurrencyName(machine->getCost().getCurrency()));
     query.addBindValue(machine->getCurrentProject());
     query.addBindValue(machine->getAssignedDate().isValid() ? machine->getAssignedDate().toString(Qt::ISODate) : QVariant());
+    query.addBindValue(machine->getMileage());
+    query.addBindValue(machine->getNextMaintenanceDate().isValid() ? machine->getNextMaintenanceDate().toString(Qt::ISODate) : QVariant());
+    query.addBindValue(machine->getPurchaseDate().isValid() ? machine->getPurchaseDate().toString(Qt::ISODate) : QVariant());
+    query.addBindValue(machine->getWarrantyPeriod());
     
     if (!query.exec()) {
         qWarning() << "Ошибка добавления техники:" << query.lastError().text();
@@ -238,7 +249,8 @@ bool FleetDatabase::updateMachine(MachinePtr machine)
     query.prepare(R"(
         UPDATE machines
         SET name = ?, type = ?, serial_number = ?, year_of_manufacture = ?,
-            status = ?, cost = ?, currency = ?, current_project = ?, assigned_date = ?
+            status = ?, cost = ?, currency = ?, current_project = ?, assigned_date = ?,
+            mileage = ?, next_maintenance_date = ?, purchase_date = ?, warranty_period = ?
         WHERE id = ?
     )");
     
@@ -251,6 +263,10 @@ bool FleetDatabase::updateMachine(MachinePtr machine)
     query.addBindValue(Money::getCurrencyName(machine->getCost().getCurrency()));
     query.addBindValue(machine->getCurrentProject());
     query.addBindValue(machine->getAssignedDate().isValid() ? machine->getAssignedDate().toString(Qt::ISODate) : QVariant());
+    query.addBindValue(machine->getMileage());
+    query.addBindValue(machine->getNextMaintenanceDate().isValid() ? machine->getNextMaintenanceDate().toString(Qt::ISODate) : QVariant());
+    query.addBindValue(machine->getPurchaseDate().isValid() ? machine->getPurchaseDate().toString(Qt::ISODate) : QVariant());
+    query.addBindValue(machine->getWarrantyPeriod());
     query.addBindValue(machine->getId());
     
     if (!query.exec()) {
@@ -302,6 +318,21 @@ QVector<MachinePtr> FleetDatabase::getAllMachines()
             machine->setAssignedDate(QDate::fromString(dateStr, Qt::ISODate));
         }
         
+        // Загружаем новые поля
+        machine->setMileage(query.value("mileage").toInt());
+        
+        QString nextMaintenanceDateStr = query.value("next_maintenance_date").toString();
+        if (!nextMaintenanceDateStr.isEmpty()) {
+            machine->setNextMaintenanceDate(QDate::fromString(nextMaintenanceDateStr, Qt::ISODate));
+        }
+        
+        QString purchaseDateStr = query.value("purchase_date").toString();
+        if (!purchaseDateStr.isEmpty()) {
+            machine->setPurchaseDate(QDate::fromString(purchaseDateStr, Qt::ISODate));
+        }
+        
+        machine->setWarrantyPeriod(query.value("warranty_period").toInt());
+        
         machines.append(machine);
     }
     
@@ -339,6 +370,21 @@ MachinePtr FleetDatabase::getMachineById(int machineId)
         machine->setAssignedDate(QDate::fromString(dateStr, Qt::ISODate));
     }
     
+    // Загружаем новые поля
+    machine->setMileage(query.value("mileage").toInt());
+    
+    const QString nextMaintenanceDateStr = query.value("next_maintenance_date").toString();
+    if (!nextMaintenanceDateStr.isEmpty()) {
+        machine->setNextMaintenanceDate(QDate::fromString(nextMaintenanceDateStr, Qt::ISODate));
+    }
+    
+    const QString purchaseDateStr = query.value("purchase_date").toString();
+    if (!purchaseDateStr.isEmpty()) {
+        machine->setPurchaseDate(QDate::fromString(purchaseDateStr, Qt::ISODate));
+    }
+    
+    machine->setWarrantyPeriod(query.value("warranty_period").toInt());
+    
     return machine;
 }
 
@@ -374,6 +420,21 @@ QVector<MachinePtr> FleetDatabase::getMachinesByStatus(MachineStatus status)
         if (!dateStr.isEmpty()) {
             machine->setAssignedDate(QDate::fromString(dateStr, Qt::ISODate));
         }
+        
+        // Загружаем новые поля
+        machine->setMileage(query.value("mileage").toInt());
+        
+        QString nextMaintenanceDateStr = query.value("next_maintenance_date").toString();
+        if (!nextMaintenanceDateStr.isEmpty()) {
+            machine->setNextMaintenanceDate(QDate::fromString(nextMaintenanceDateStr, Qt::ISODate));
+        }
+        
+        QString purchaseDateStr = query.value("purchase_date").toString();
+        if (!purchaseDateStr.isEmpty()) {
+            machine->setPurchaseDate(QDate::fromString(purchaseDateStr, Qt::ISODate));
+        }
+        
+        machine->setWarrantyPeriod(query.value("warranty_period").toInt());
         
         machines.append(machine);
     }
@@ -414,6 +475,21 @@ QVector<MachinePtr> FleetDatabase::getMachinesByProject(const QString& projectNa
         if (!dateStr.isEmpty()) {
             machine->setAssignedDate(QDate::fromString(dateStr, Qt::ISODate));
         }
+        
+        // Загружаем новые поля
+        machine->setMileage(query.value("mileage").toInt());
+        
+        QString nextMaintenanceDateStr = query.value("next_maintenance_date").toString();
+        if (!nextMaintenanceDateStr.isEmpty()) {
+            machine->setNextMaintenanceDate(QDate::fromString(nextMaintenanceDateStr, Qt::ISODate));
+        }
+        
+        QString purchaseDateStr = query.value("purchase_date").toString();
+        if (!purchaseDateStr.isEmpty()) {
+            machine->setPurchaseDate(QDate::fromString(purchaseDateStr, Qt::ISODate));
+        }
+        
+        machine->setWarrantyPeriod(query.value("warranty_period").toInt());
         
         machines.append(machine);
     }
